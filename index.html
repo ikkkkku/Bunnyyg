@@ -1,0 +1,1141 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-title" content="Bunny">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="no-referrer">
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://unpkg.com/localforage/dist/localforage.js"></script>
+<script src="bunny-export.js"></script>
+    <link rel="manifest" href="manifest.webmanifest">
+    <title>Bunny</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg class="svg-defs">
+    <defs>
+        <path id="ic-diary" d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm2 4v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h6v-2H8z"/>
+        <path id="ic-shop" d="M16 6V4a4 4 0 00-8 0v2H4v14a2 2 0 002 2h12a2 2 0 002-2V6h-4zM10 4a2 2 0 014 0v2h-4V4zm6 4v2a1 1 0 11-2 0V8h-4v2a1 1 0 11-2 0V8H6v12h12V8h-2z"/>
+        <path id="ic-forum" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
+        <path id="ic-music" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        <path id="ic-companion" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        <path id="ic-search" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        <path id="ic-placeholder" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" stroke-dasharray="4" stroke="var(--text-light)" stroke-width="1" fill="none"/>
+        <path id="ic-couple" d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3z"/>
+        <path id="ic-chat" d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+        <path id="ic-theme" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5-.67 1.5-1.5 1.5z"/>
+        <path id="ic-world" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        <path id="ic-settings" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+        <path id="ic-play" d="M8 5v14l11-7z"/>
+        <path id="ic-skip" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+        <path id="ic-add" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        <path id="ic-back" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+        <path id="ic-moments" d="M12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/>
+        <path id="ic-user" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        <path id="ic-refresh" d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        <path id="ic-camera" d="M19 4h-3.17L14 2H10L8.17 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-7 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/>
+        <path id="ic-wallet" d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+        <path id="ic-mask" d="M20,9V7c0-1.1-0.9-2-2-2h-3c0-1.66-1.34-3-3-3S9,3.34,9,5H6C4.9,5,4,5.9,4,7v2c-1.66,0-3,1.34-3,3s1.34,3,3,3v4 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4c1.66,0,3-1.34,3-3S21.66,9,20,9z M18,19H6V7h12V19z M8.5,11.5c0-0.83,0.67-1.5,1.5-1.5 s1.5,0.67,1.5,1.5S10.83,13,10,13S8.5,12.33,8.5,11.5z M14,13c-0.83,0-1.5-0.67-1.5-1.5S13.17,10,14,10s1.5,0.67,1.5,1.5 S14.83,13,14,13z M8,15h8v2H8V15z"/>
+        <path id="ic-emoji" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+        <path id="ic-palette" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5-.67 1.5-1.5 1.5z"/>
+        <path id="ic-arrow-right" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+        <path id="ic-menu" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        <g id="ic-bold-add">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 7v10M7 12h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g id="ic-bold-emoji">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor"/>
+            <circle cx="15.5" cy="9.5" r="1.5" fill="currentColor"/>
+            <path d="M8 14.5c2 2.5 6 2.5 8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g id="ic-bold-send">
+            <path d="M12 18V6M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g id="ic-fill-camera"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="ic-fill-image"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="ic-fill-mic"><rect x="9" y="2" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v1a7 7 0 0014 0v-1M12 18v4M9 22h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="ic-fill-transfer"><path d="M4 8h16M16 4l4 4-4 4M20 16H4M8 20l-4-4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="ic-fill-location"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="ic-fill-phone"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="ic-fill-video"><rect x="2" y="6" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 10l6-4v12l-6-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="ic-fill-card"><rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10h20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+    </defs>
+</svg>
+<div class="screen">
+    <header class="status-bar">
+        <div class="status-left">
+            <span class="real-time">00:00</span>
+        </div>
+        <div class="status-right">
+            <svg class="icon-signal" viewBox="0 0 24 24">
+                <rect x="1.5" y="14" width="2.5" height="8" rx="1"/>
+                <rect x="6" y="11" width="2.5" height="11" rx="1"/>
+                <rect x="10.5" y="8" width="2.5" height="14" rx="1"/>
+                <rect x="15" y="5" width="2.5" height="17" rx="1"/>
+                <rect x="19.5" y="2" width="2.5" height="20" rx="1"/>
+            </svg>
+            <div class="battery-container">
+                <div class="battery-level" id="battery-fill" style="width: 80%;"></div>
+            </div>
+        </div>
+    </header>
+    <!-- 新增：顶部横幅通知 -->
+    <div class="notification-banner" id="notification-banner">
+        <img class="notif-avatar" id="notif-avatar" src="">
+        <div class="notif-info">
+            <div class="notif-header">
+                <span class="notif-name" id="notif-name">姓名</span>
+                <span class="notif-time" id="notif-time">00:00</span>
+            </div>
+            <div class="notif-desc" id="notif-desc">消息内容...</div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="music-widget" data-img-key="music-bg-img">
+            <div class="music-bg"></div>
+            <div class="music-content">
+                <div class="music-top">
+                    <div class="music-top-left">
+                        <svg class="icon-signal" viewBox="0 0 24 24" style="width:15px; height:15px;">
+                            <rect x="1.5" y="14" width="2.5" height="8" rx="1"/>
+                            <rect x="6" y="11" width="2.5" height="11" rx="1"/>
+                            <rect x="10.5" y="8" width="2.5" height="14" rx="1"/>
+                            <rect x="15" y="5" width="2.5" height="17" rx="1"/>
+                            <rect x="19.5" y="2" width="2.5" height="20" rx="1"/>
+                        </svg>
+                        <span class="real-time">00:00</span>
+                    </div>
+                    <span data-text-key="text-weather" style="cursor: pointer;">晴</span>
+                </div>
+                <div class="music-middle">
+                    <span class="music-nickname" data-text-key="text-nickname" style="cursor: pointer;">兔兔丸</span>
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="music-avatar" alt="Avatar" data-img-key="avatar-main">
+                </div>
+                <div class="music-bottom">
+                    <div class="music-controls">
+                        <svg viewBox="0 0 24 24"><use href="#ic-skip" transform="scale(-1, 1) translate(-24, 0)"/></svg>
+                        <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><use href="#ic-play"/></svg>
+                        <svg viewBox="0 0 24 24"><use href="#ic-skip"/></svg>
+                    </div>
+                    <div class="music-lyrics" data-text-key="text-lyrics" style="cursor: pointer;">あなたとずっと一緒にいたい𖦹 𖥦×</div>
+                </div>
+            </div>
+        </div>
+        <div class="split-layout">
+            <div class="cat-heart-widget">
+                <div class="cat-heart-mask" id="heart-mask-bg"></div>
+                <div class="cat-heart-click-area" data-img-key="heart-img" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;">
+                    <svg viewBox="0 0 24 24" style="width: 100%; height: 100%; pointer-events: none;">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" style="pointer-events: auto; fill: transparent; cursor: pointer;"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="app-grid">
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-diary"/></svg></div>
+                    <span class="app-name">日记</span>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-shop"/></svg></div>
+                    <span class="app-name">购物</span>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-forum"/></svg></div>
+                    <span class="app-name">论坛</span>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-music"/></svg></div>
+                    <span class="app-name">音乐</span>
+                </div>
+            </div>
+        </div>
+        <div class="split-layout">
+            <div class="app-grid">
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-companion"/></svg></div>
+                    <span class="app-name">陪伴</span>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg></div>
+                    <span class="app-name">查手机</span>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-placeholder"/></svg></div>
+                    <span class="app-name">占位</span>
+                </div>
+                <div class="app-item">
+                    <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-couple"/></svg></div>
+                    <span class="app-name">情侣空间</span>
+                </div>
+            </div>
+            <div class="widget-stack">
+                <div class="mini-widget text-widget" data-text-key="text-deco" style="cursor: pointer;">
+                    ⊹♡┈ 𓏴 𝒫𝒾𝓃𝓀 𝒱𝑒𝓁𝓋𝑒𝓉 𓏴 ┈♡⊹
+                </div>
+                <div class="mini-widget profile-widget-1">
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" class="w-avatar" alt="Avatar" data-img-key="avatar-w1">
+                    <span class="w-text" data-text-key="text-wtext" style="cursor: pointer;">*愛しています</span>
+                </div>
+                <div class="mini-widget profile-widget-2">
+                    <div class="w-symbols" data-text-key="text-symbols" style="cursor: pointer;">⸝⸝ ♪·🖇 ⁺˳꙳✧˖°ﾟ</div>
+                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80" class="w-avatar" alt="Avatar" data-img-key="avatar-w2">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dock">
+        <div class="app-item">
+            <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-chat"/></svg></div>
+            <span class="app-name">Chat</span>
+        </div>
+        <div class="app-item">
+            <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-theme"/></svg></div>
+            <span class="app-name">主题</span>
+        </div>
+        <div class="app-item">
+            <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-world"/></svg></div>
+            <span class="app-name">世界书</span>
+        </div>
+        <div class="app-item">
+            <div class="app-icon"><svg viewBox="0 0 24 24"><use href="#ic-settings"/></svg></div>
+            <span class="app-name">设置</span>
+        </div>
+    </div>
+    <div class="theme-page" id="theme-page">
+        <div class="theme-header">
+            <span class="theme-back" id="theme-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">主题设置</span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="theme-content">
+            <div class="theme-section-title" onclick="this.querySelector('.theme-toggle-arrow').classList.toggle('active'); this.nextElementSibling.classList.toggle('active');">
+                <span>桌面壁纸</span>
+                <svg class="theme-toggle-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="theme-section-content">
+                <div class="virtual-phone-container">
+                    <div class="virtual-phone" id="preview-wallpaper">
+                    <div class="vp-time">00:00</div>
+                    <div class="vp-dock">
+                        <div class="vp-icon"></div><div class="vp-icon"></div><div class="vp-icon"></div><div class="vp-icon"></div>
+                    </div>
+                </div>
+                    <div class="vp-hint">点击小手机更换壁纸</div>
+                    <button class="settings-btn" id="btn-reset-wallpaper" style="margin-top: 10px; color: #ff6b81; width: 100%;">恢复默认壁纸</button>
+                </div>
+            </div>
+            <div class="theme-section-title" onclick="this.querySelector('.theme-toggle-arrow').classList.toggle('active'); this.nextElementSibling.classList.toggle('active');">
+                <span>桌面图标</span>
+                <svg class="theme-toggle-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="theme-section-content">
+                <div class="theme-icons-grid" id="theme-icons-grid">
+                </div>
+                <button class="settings-btn" id="btn-reset-icons" style="margin-top: 10px; color: #ff6b81; width: 100%;">恢复默认图标</button>
+            </div>
+            <div class="theme-section-title" onclick="this.querySelector('.theme-toggle-arrow').classList.toggle('active'); this.nextElementSibling.classList.toggle('active');">
+                <span>全局字体</span>
+                <svg class="theme-toggle-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="theme-section-content">
+                <div class="theme-font-setting" style="display: flex; gap: 10px;">
+                    <input type="text" id="font-input" class="settings-input" placeholder="输入URL (如.ttf)" style="flex: 1; min-width: 0;">
+                    <button class="settings-btn primary" id="btn-apply-font" style="padding: 0 20px; white-space: nowrap; flex-shrink: 0;">应用</button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="settings-btn" id="btn-local-font" style="flex: 1;">本地文件</button>
+                    <button class="settings-btn" id="btn-reset-font" style="flex: 1; color: #ff6b81;">恢复默认</button>
+                </div>
+                <input type="file" id="local-font-input" accept=".ttf,.woff,.woff2,.otf" style="display: none;">
+                <!-- 新增：字体大小与粗细设置 -->
+                <div class="settings-group" style="margin-top: 14px;">
+                    <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.01);">
+                        <label>主要文本大小: <span id="font-size-val" style="color: var(--theme-pink-dark);">13px (默认)</span></label>
+                        <input type="range" id="theme-font-size" min="10" max="24" step="1" value="13">
+                        <div style="font-size: 10px; color: #cbaeb4; font-weight: 500; margin-top: 4px;">智能调节聊天气泡、输入框及列表的阅读字号</div>
+                    </div>
+                    <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.01);">
+                        <label>全局字体粗细: <span id="font-weight-val" style="color: var(--theme-pink-dark);">500 (默认)</span></label>
+                        <input type="range" id="theme-font-weight" min="100" max="900" step="100" value="500">
+                    </div>
+                </div>
+            </div>
+            <div class="theme-section-title" onclick="this.querySelector('.theme-toggle-arrow').classList.toggle('active'); this.nextElementSibling.classList.toggle('active');">
+                <span>页面设置</span>
+                <svg class="theme-toggle-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="theme-section-content">
+                <div class="settings-group">
+                    <div class="switch-container">
+                        <div>
+                            <div class="switch-label">隐藏状态栏</div>
+                            <div class="switch-desc">开启后将隐藏顶部时间、信号、电池等信息</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-hide-statusbar">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <!-- 新增：UI缩放设置 -->
+                    <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.01);">
+                        <label>UI缩放: <span id="ui-scale-val" style="color: var(--theme-pink-dark);">100%</span></label>
+                        <input type="range" id="theme-ui-scale" min="50" max="150" step="1" value="100">
+                        <div style="font-size: 10px; color: #cbaeb4; font-weight: 500; margin-top: 4px;">调整整个页面的显示大小，默认100%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="theme-page" id="settings-page">
+        <div class="theme-header">
+            <span class="theme-back" id="settings-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">API 设置</span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="theme-content">
+            <div class="theme-section-title" onclick="this.querySelector('.theme-toggle-arrow').classList.toggle('active'); this.nextElementSibling.classList.toggle('active');">
+                <span>API 设置</span>
+                <svg class="theme-toggle-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="theme-section-content">
+                <div class="settings-group">
+                    <input type="text" id="api-url" class="settings-input" placeholder="如 https://api.deepseek.com">
+                    <input type="password" id="api-key" class="settings-input" placeholder="如 Bearer Token">
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btn-fetch-models" class="settings-btn" style="flex: 1;">拉取模型</button>
+                        <select id="api-model-select" class="settings-input" style="flex: 1; cursor: pointer; padding-left: 10px; padding-right: 10px;">
+                            <option value="">点击此处下拉选择</option>
+                        </select>
+                    </div>
+                    <input type="text" id="api-model" class="settings-input" placeholder="手动输入或在上方拉取选择" style="margin-top: 10px;">
+                    <div class="slider-container" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,182,193,0.5);">
+                        <label>模型温度: <span id="temp-val" style="color: var(--theme-pink-dark);">0.7</span></label>
+                        <input type="range" id="api-temp" min="0" max="2" step="0.1" value="0.7">
+                    </div>
+                    <div class="slider-container" style="margin-top: 10px;">
+                        <label>携带上文数量</label>
+                        <input type="number" id="api-context" min="10" max="100" value="20" class="settings-input">
+                    </div>
+                </div>
+                <div class="settings-actions">
+                    <button id="btn-save-api" class="settings-btn primary">保存当前设置</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btn-save-preset" class="settings-btn" style="flex: 1;">存为预设</button>
+                        <button id="btn-manage-presets" class="settings-btn" style="flex: 1;">管理预设</button>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-section-title" onclick="this.querySelector('.theme-toggle-arrow').classList.toggle('active'); this.nextElementSibling.classList.toggle('active');">
+                <span>数据管理</span>
+                <svg class="theme-toggle-arrow" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="theme-section-content">
+                <div class="settings-group">
+                    <button class="settings-btn" id="btn-export-data">导出数据</button>
+                    <button class="settings-btn" id="btn-import-data">导入数据</button>
+                    <button class="settings-btn" id="btn-clear-data" style="color: #ff6b81;">清除所有数据</button>
+                </div>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+    <div class="theme-page" id="worldbook-page">
+        <div class="theme-header">
+            <span class="theme-back" id="worldbook-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">世界书</span>
+            <span class="theme-back" id="btn-add-wb" style="color: var(--theme-pink-dark);"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-add"/></svg></span>
+        </div>
+        <div class="theme-content" style="padding-top: 16px;">
+            <div class="wb-list" id="wb-list">
+            </div>
+        </div>
+    </div>
+    <div class="theme-page" id="mask-page" style="z-index: 300;">
+        <div class="theme-header">
+            <span class="theme-back" id="mask-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">面具预设</span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="theme-content">
+            <div class="theme-section-title">添加新面具</div>
+            <div class="settings-group" style="align-items: center;">
+                <div class="mask-avatar-uploader" id="mask-avatar-trigger">
+                </div>
+                <input type="text" id="mask-name" class="settings-input" placeholder="输入姓名">
+                <select id="mask-gender" class="settings-input">
+                    <option value="female">女</option>
+                    <option value="male">男</option>
+                    <option value="other">其他</option>
+                </select>
+                <textarea id="mask-desc" class="settings-input textarea-custom" placeholder="输入详细设定 (性格、背景等)..."></textarea>
+                <button class="settings-btn primary" id="btn-save-mask" style="width: 100%;">保存至预设</button>
+            </div>
+            <div class="theme-section-title">预设管理</div>
+            <div class="wb-list" id="mask-list">
+            </div>
+        </div>
+    </div>
+    <div class="chat-page" id="chat-page">
+        <div class="tab-panel tab-chat active">
+            <div class="chat-header">
+                <span class="chat-header-btn" id="chat-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+                <span class="theme-title">消息</span>
+                <span class="chat-header-btn" id="btn-chat-add"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-add"/></svg></span>
+            </div>
+            <div class="chat-group-nav">
+                <div class="chat-group-item active">All</div>
+                <div class="chat-group-item">Caa</div>
+                <div class="chat-group-item">Grp</div>
+                <div class="chat-group-item">Re</div>
+            </div>
+            <div class="chat-content" id="chat-list-content">
+            </div>
+        </div>
+        <div class="tab-panel tab-moments">
+            <div class="moments-float-btns">
+                <svg viewBox="0 0 24 24"><use href="#ic-refresh"/></svg>
+                <svg viewBox="0 0 24 24"><use href="#ic-camera"/></svg>
+            </div>
+            <div class="moments-header-container">
+                <div class="moments-bg" data-img-key="moments-bg-img"></div>
+                <div class="moments-profile">
+                    <div class="moments-name" data-text-key="moments-nickname">兔兔丸</div>
+                    <img class="moments-avatar" src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80" alt="Avatar" data-img-key="moments-avatar">
+                </div>
+            </div>
+            <div class="moments-sign" data-text-key="moments-sign">⊹ ♡┈┈ 𓏴 𝒫𝒾𝓃𝓀 𝒱𝑒𝓁𝓋𝑒𝓉 𓏴 ┈┈♡ ⊹</div>
+            <div class="moments-feed">
+            </div>
+        </div>
+        <div class="tab-panel tab-user">
+            <div class="user-profile-header">
+                <img class="user-large-avatar" src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80" alt="Avatar" data-img-key="user-avatar">
+                <div class="user-name" data-text-key="user-nickname">兔兔丸</div>
+            </div>
+            <div class="user-menu-group">
+                <div class="user-menu-item">
+                    <div class="user-menu-icon-wrap">
+                        <div class="user-menu-icon"><svg viewBox="0 0 24 24"><use href="#ic-wallet"/></svg></div>
+                        <span>支付钱包</span>
+                    </div>
+                    <svg class="user-menu-arrow" viewBox="0 0 24 24"><use href="#ic-arrow-right"/></svg>
+                </div>
+                <div class="user-menu-item" id="btn-open-mask">
+                    <div class="user-menu-icon-wrap">
+                        <div class="user-menu-icon"><svg viewBox="0 0 24 24"><use href="#ic-mask"/></svg></div>
+                        <span>面具预设</span>
+                    </div>
+                    <svg class="user-menu-arrow" viewBox="0 0 24 24"><use href="#ic-arrow-right"/></svg>
+                </div>
+                <div class="user-menu-item">
+                    <div class="user-menu-icon-wrap">
+                        <div class="user-menu-icon"><svg viewBox="0 0 24 24"><use href="#ic-emoji"/></svg></div>
+                        <span>表情包库</span>
+                    </div>
+                    <svg class="user-menu-arrow" viewBox="0 0 24 24"><use href="#ic-arrow-right"/></svg>
+                </div>
+                <div class="user-menu-item">
+                    <div class="user-menu-icon-wrap">
+                        <div class="user-menu-icon"><svg viewBox="0 0 24 24"><use href="#ic-palette"/></svg></div>
+                        <span>聊天美化</span>
+                    </div>
+                    <svg class="user-menu-arrow" viewBox="0 0 24 24"><use href="#ic-arrow-right"/></svg>
+                </div>
+            </div>
+        </div>
+        <div class="chat-dock">
+            <div class="chat-dock-item active" data-target="tab-chat"><svg viewBox="0 0 24 24"><use href="#ic-chat"/></svg></div>
+            <div class="chat-dock-item" data-target="tab-moments"><svg viewBox="0 0 24 24"><use href="#ic-moments"/></svg></div>
+            <div class="chat-dock-item" data-target="tab-user"><svg viewBox="0 0 24 24"><use href="#ic-user"/></svg></div>
+        </div>
+    </div>
+    <!-- 新增：聊天详情页面 -->
+    <div class="chat-detail-page" id="chat-detail-page">
+        <div class="chat-detail-header">
+        <div class="chat-detail-header-left">
+            <span class="chat-header-btn" id="chat-detail-back"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></span>
+            <span class="theme-title" id="chat-detail-title">角色姓名</span>
+        </div>
+        <!-- 将右侧按钮包裹在一个 flex 容器中，并添加爱心按钮、线下按钮 -->
+        <div style="display: flex; gap: 14px; align-items: center;">
+            <span class="chat-header-btn" id="btn-chat-heart">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill: none !important; width: 20px; height: 20px;">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </span>
+            <span class="chat-header-btn" id="btn-chat-offline">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill: none !important; width: 20px; height: 20px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </span>
+            <span class="chat-header-btn" id="btn-chat-settings"><svg viewBox="0 0 24 24"><use href="#ic-menu"/></svg></span>
+        </div>
+    </div>
+    <!-- 新增：心声面板 -->
+    <div class="glass-panel" id="inner-voice-panel">
+        <div class="row-heartrate">
+            <svg class="heart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <div class="bpm-text" id="iv-bpm">86 BPM</div>
+        </div>
+        <div class="row-location">
+            <svg class="location-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <span id="iv-location">未知地点</span>
+        </div>
+        <div class="thought-section real-thought">
+            <div class="section-title">Surface Thoughts</div>
+            <div class="thought-content" id="iv-surface">
+                未知心声
+            </div>
+        </div>
+        <div class="thought-section dark-thought">
+            <div class="section-title">Deep Shadows</div>
+            <div class="thought-content" id="iv-shadow">
+                未知阴暗面
+            </div>
+        </div>
+    </div>
+    <!-- 心声面板结束 -->
+    <div class="chat-detail-content" id="chat-detail-content">
+        </div>
+        <!-- 引用栏 -->
+        <div class="quote-bar" id="quote-bar">
+            <div class="quote-text" id="quote-text-display">引用 | </div>
+            <div class="quote-close" id="btn-quote-close">×</div>
+        </div>
+        <!-- 原输入栏 -->
+        <div class="chat-detail-bottom" id="chat-detail-bottom">
+                        <div class="cd-btn" id="btn-chat-plus"><svg viewBox="0 0 24 24"><use href="#ic-bold-add"/></svg></div>
+            <textarea class="cd-input" id="cd-msg-input" placeholder="发送消息..." rows="1"></textarea>
+            <div class="cd-btn"><svg viewBox="0 0 24 24"><use href="#ic-bold-emoji"/></svg></div>
+            <div class="cd-btn cd-btn-send" id="btn-send-msg"><svg viewBox="0 0 24 24"><use href="#ic-bold-send"/></svg></div>
+        </div>
+        <!-- 展开菜单面板 -->
+        <div class="chat-plus-menu" id="chat-plus-menu">
+            <div class="cpm-item" id="btn-open-camera"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-camera"/></svg></div><span class="cpm-name">相机</span></div>
+            <div class="cpm-item" id="btn-open-image"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-image"/></svg></div><span class="cpm-name">图片</span></div>
+            <div class="cpm-item" id="btn-open-voice"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-mic"/></svg></div><span class="cpm-name">语音</span></div>
+            <div class="cpm-item"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-transfer"/></svg></div><span class="cpm-name">转账</span></div>
+            <div class="cpm-item" id="btn-open-location"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-location"/></svg></div><span class="cpm-name">定位</span></div>
+            <div class="cpm-item"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-phone"/></svg></div><span class="cpm-name">电话</span></div>
+            <div class="cpm-item"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-video"/></svg></div><span class="cpm-name">视频</span></div>
+            <div class="cpm-item"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-card"/></svg></div><span class="cpm-name">亲属卡</span></div>
+        </div>
+        <!-- 多选操作栏 -->
+        <div class="multi-select-bottom" id="multi-select-bottom" style="flex-direction: column; gap: 12px; align-items: center;">
+            <div id="ms-count-display" style="font-size: 13px; font-weight: 700; color: var(--theme-text-dark);">已选择 0 条</div>
+            <div style="display: flex; width: 100%; justify-content: space-between; padding: 0 8px;">
+                <button class="ms-btn" id="btn-ms-cancel">取消</button>
+                <button class="ms-btn select-all" id="btn-ms-select-all">全选</button>
+                <button class="ms-btn del" id="btn-ms-delete">删除</button>
+            </div>
+        </div>
+    </div>
+    <!-- 悬浮气泡菜单 -->
+    <div class="bubble-menu" id="bubble-menu">
+        <button class="bm-btn" id="bm-copy">复制</button>
+        <button class="bm-btn" id="bm-edit">编辑</button>
+        <button class="bm-btn" id="bm-quote">引用</button>
+        <button class="bm-btn" id="bm-multi">多选</button>
+        <button class="bm-btn" id="bm-del-retract"></button>
+        <button class="bm-btn" id="bm-regen" style="display:none;">重回</button>
+    </div>
+    <!-- 聊天详情设置页 -->
+    <div class="theme-page" id="chat-settings-page" style="z-index: 500;">
+        <div class="theme-header">
+            <span class="theme-back" id="chat-settings-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">聊天详情</span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="theme-content">
+            <div class="theme-section-title">基础设置</div>
+            <div class="settings-group">
+                <input type="text" id="cs-remark" class="settings-input" placeholder="添加备注名">
+                <button class="settings-btn" id="btn-cs-wallpaper">更换聊天壁纸</button>
+                <button class="settings-btn" id="btn-cs-clear-wallpaper" style="display: none;">清除自定义壁纸</button>
+                <!-- 新增：跳转专属个人美化页面的入口 -->
+                <button class="settings-btn" id="btn-open-personal-style" style="color: var(--theme-pink-dark); font-weight: 800; border-color: var(--theme-pink-dark); background: linear-gradient(135deg, #fff0f5 0%, #fff 100%);">个性化聊天装扮 (专属)</button>
+            </div>
+            <div class="theme-section-title" style="margin-top: 20px;">高级功能</div>
+            <div class="settings-group">
+                <div class="switch-container">
+                    <div>
+                        <div class="switch-label">时间感知</div>
+                        <div class="switch-desc">开启后AI将精准感知现实时间(误差<1分钟)</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="cs-time-aware">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="theme-section-title" style="margin-top: 20px;">记忆总结</div>
+            <div class="settings-group">
+                <div class="switch-container">
+                    <div>
+                        <div class="switch-label">自动总结</div>
+                        <div class="switch-desc">消息数达到阈值后台自动生成记忆</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="cs-auto-summary">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="slider-container" id="cs-summary-threshold-container" style="display:none;">
+                    <label>触发阈值: <span id="cs-threshold-val" style="color: var(--theme-pink-dark);">50</span> 条</label>
+                    <input type="range" id="cs-summary-threshold" min="20" max="200" step="10" value="50">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="settings-btn primary" id="btn-cs-summarize-now" style="flex: 1;">立即总结</button>
+                    <button class="settings-btn" id="btn-cs-history-summary" style="flex: 1;">历史总结</button>
+                </div>
+                <div style="font-size: 11px; color: #8a7b80; text-align: center; margin-top: 4px; font-weight: 600;" id="cs-stats-display">
+                    消息总数: 0 | 预估 Tokens: 0
+                </div>
+            </div>
+            <div class="theme-section-title" style="margin-top: 20px;">危险操作</div>
+            <div class="settings-group">
+                <button class="settings-btn" id="btn-cs-clear-history" style="color: #ff6b81;">清空聊天记录</button>
+                <button class="settings-btn" id="btn-cs-block" style="background: #ff6b81; color: #fff; border: none;">拉黑该好友</button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="cs-wallpaper-input" accept="image/*" style="display: none;">
+    <input type="file" id="chat-real-image-input" accept="image/*" style="display: none;">
+    <!-- 历史总结全屏页面 -->
+    <div class="theme-page" id="summary-detail-page" style="z-index: 600;">
+        <div class="theme-header">
+            <span class="theme-back" id="summary-detail-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">历史总结</span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="summary-tab-nav">
+            <div class="summary-tab-item active" data-target="tab-memory">记忆</div>
+            <div class="summary-tab-item" data-target="tab-summary">总结</div>
+            <div class="summary-tab-item" data-target="tab-agreement">约定</div>
+        </div>
+        <div class="summary-tab-content active" id="tab-memory"></div>
+        <div class="summary-tab-content" id="tab-summary"></div>
+        <div class="summary-tab-content" id="tab-agreement"></div>
+    </div>
+    <!-- 新增：全局聊天美化专属页面 -->
+    <div class="theme-page" id="global-style-page" style="z-index: 700;">
+        <div class="theme-header">
+            <span class="theme-back" id="global-style-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">全局聊天美化</span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="theme-content">
+            <div class="chat-preview-box">
+                <div class="vp-chat-container" id="global-vp-container">
+                    <div class="vp-chat-row ai"><div class="vp-avatar" style="background:#ffb6c1;"></div><div class="vp-bubble ai-bubble">你觉得这个新样式怎么样？</div></div>
+                    <div class="vp-chat-row user"><div class="vp-avatar" style="background:#cbaeb4;"></div><div class="vp-bubble user-bubble">看起来非常清爽，字号也合适！</div></div>
+                </div>
+            </div>
+            <div class="vp-hint" style="text-align:center; margin-bottom:10px;">实时预览 (将覆盖所有未单独设置的角色)</div>
+            <div class="theme-section-title">样式设置</div>
+            <div class="settings-group">
+                <select id="gs-color" class="settings-input" style="cursor: pointer;">
+                    <option value="default">默认色系</option><option value="blue">海盐蓝 (清新)</option><option value="green">薄荷绿 (护眼)</option><option value="purple">香芋紫 (梦幻)</option><option value="dark">暗夜黑 (深邃)</option>
+                </select>
+                <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px;">
+                    <label>气泡大小 (内边距): <span id="gs-size-val" style="color: var(--theme-pink-dark);">6px</span></label>
+                    <input type="range" id="gs-size" min="4" max="20" step="1" value="6">
+                </div>
+                <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px;">
+                    <label>气泡圆角: <span id="gs-radius-val" style="color: var(--theme-pink-dark);">12px</span></label>
+                    <input type="range" id="gs-radius" min="0" max="30" step="1" value="12">
+                </div>
+                <select id="gs-avatar" class="settings-input" style="cursor: pointer;">
+                    <option value="default">默认头像框</option><option value="circle">纯粹正圆 (无边框)</option><option value="square">微圆角方框</option><option value="shadow">重度悬浮阴影</option><option value="neon">霓虹发光</option><option value="custom">自定义本地图片</option>
+                </select>
+                <!-- 新增：全局自定义头像框面板 -->
+                <div id="gs-custom-frame-panel" style="display: none; flex-direction: column; gap: 14px; padding: 14px 16px; background: var(--theme-card-bg); border-radius: 16px; border: 1px dashed var(--theme-pink);">
+                    <button class="settings-btn" id="btn-gs-upload-frame" style="font-size: 12px; padding: 8px;">上传透明头像框 (PNG)</button>
+                    <input type="file" id="gs-frame-file" accept="image/png, image/gif, image/webp" style="display: none;">
+                    <div class="slider-container">
+                        <label style="font-size: 11px;">缩放大小: <span id="gs-frame-scale-val" style="color: var(--theme-pink-dark);">1.2</span></label>
+                        <input type="range" id="gs-frame-scale" min="0.5" max="3" step="0.1" value="1.2">
+                    </div>
+                    <div class="slider-container">
+                        <label style="font-size: 11px;">左右偏移 (X): <span id="gs-frame-x-val" style="color: var(--theme-pink-dark);">0px</span></label>
+                        <input type="range" id="gs-frame-x" min="-50" max="50" step="1" value="0">
+                    </div>
+                    <div class="slider-container">
+                        <label style="font-size: 11px;">上下偏移 (Y): <span id="gs-frame-y-val" style="color: var(--theme-pink-dark);">0px</span></label>
+                        <input type="range" id="gs-frame-y" min="-50" max="50" step="1" value="0">
+                    </div>
+                </div>
+                <textarea id="gs-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码"></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="settings-btn" id="btn-gs-save-preset" style="flex: 1;">存为预设</button>
+                    <button class="settings-btn" id="btn-gs-manage-preset" style="flex: 1;">管理预设</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 新增：个人专属聊天美化页面 -->
+    <div class="theme-page" id="personal-style-page" style="z-index: 700;">
+        <div class="theme-header">
+            <span class="theme-back" id="personal-style-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">专属聊天装扮</span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="theme-content">
+            <div class="chat-preview-box">
+                <div class="vp-chat-container" id="personal-vp-container">
+                    <div class="vp-chat-row ai"><div class="vp-avatar" id="ps-vp-ai-avatar"></div><div class="vp-bubble ai-bubble">这是为你单独定制的专属气泡哦！</div></div>
+                    <div class="vp-chat-row user"><div class="vp-avatar" id="ps-vp-user-avatar"></div><div class="vp-bubble user-bubble">哇，真的和别人不一样呢~</div></div>
+                </div>
+            </div>
+            <div class="vp-hint" style="text-align:center; margin-bottom:10px;">实时预览 (仅对当前角色生效)</div>
+            <div class="theme-section-title">样式设置</div>
+            <div class="settings-group">
+                <select id="ps-color" class="settings-input" style="cursor: pointer;">
+                    <option value="default">默认色系</option><option value="blue">海盐蓝 (清新)</option><option value="green">薄荷绿 (护眼)</option><option value="purple">香芋紫 (梦幻)</option><option value="dark">暗夜黑 (深邃)</option>
+                </select>
+                <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px;">
+                    <label>气泡大小 (内边距): <span id="ps-size-val" style="color: var(--theme-pink-dark);">6px</span></label>
+                    <input type="range" id="ps-size" min="4" max="20" step="1" value="6">
+                </div>
+                <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px;">
+                    <label>气泡圆角: <span id="ps-radius-val" style="color: var(--theme-pink-dark);">12px</span></label>
+                    <input type="range" id="ps-radius" min="0" max="30" step="1" value="12">
+                </div>
+                <select id="ps-avatar" class="settings-input" style="cursor: pointer;">
+                    <option value="default">默认头像框</option><option value="circle">纯粹正圆 (无边框)</option><option value="square">微圆角方框</option><option value="shadow">重度悬浮阴影</option><option value="neon">霓虹发光</option><option value="custom">自定义本地图片</option>
+                </select>
+                <!-- 新增：个人自定义头像框面板 -->
+                <div id="ps-custom-frame-panel" style="display: none; flex-direction: column; gap: 14px; padding: 14px 16px; background: var(--theme-card-bg); border-radius: 16px; border: 1px dashed var(--theme-pink);">
+                    <button class="settings-btn" id="btn-ps-upload-frame" style="font-size: 12px; padding: 8px;">上传透明头像框 (PNG)</button>
+                    <input type="file" id="ps-frame-file" accept="image/png, image/gif, image/webp" style="display: none;">
+                    <div class="slider-container">
+                        <label style="font-size: 11px;">缩放大小: <span id="ps-frame-scale-val" style="color: var(--theme-pink-dark);">1.2</span></label>
+                        <input type="range" id="ps-frame-scale" min="0.5" max="3" step="0.1" value="1.2">
+                    </div>
+                    <div class="slider-container">
+                        <label style="font-size: 11px;">左右偏移 (X): <span id="ps-frame-x-val" style="color: var(--theme-pink-dark);">0px</span></label>
+                        <input type="range" id="ps-frame-x" min="-50" max="50" step="1" value="0">
+                    </div>
+                    <div class="slider-container">
+                        <label style="font-size: 11px;">上下偏移 (Y): <span id="ps-frame-y-val" style="color: var(--theme-pink-dark);">0px</span></label>
+                        <input type="range" id="ps-frame-y" min="-50" max="50" step="1" value="0">
+                    </div>
+                </div>
+                <textarea id="ps-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码"></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="settings-btn" id="btn-ps-save-preset" style="flex: 1;">存为预设</button>
+                    <button class="settings-btn" id="btn-ps-manage-preset" style="flex: 1;">管理预设</button>
+                </div>
+                <button class="settings-btn" id="btn-ps-clear" style="color: #ff6b81; margin-top: 4px;">清除专属装扮 (恢复全局)</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="context-menu" id="context-menu">
+    <button class="menu-btn" id="menu-url-btn">输入URL</button>
+    <button class="menu-btn" id="menu-local-btn">本地文件</button>
+</div>
+<input type="file" id="img-file-input" accept="image/*" style="display: none;">
+<input type="file" id="mask-file-input" accept="image/*" style="display: none;">
+<div class="modal-overlay" id="preset-modal">
+    <div class="modal-content">
+        <div class="modal-header">管理预设</div>
+        <div class="preset-list" id="preset-list"></div>
+        <button class="settings-btn" id="btn-close-preset" style="margin-top: 10px; width: 100%;">关闭</button>
+    </div>
+</div>
+<div class="modal-overlay" id="edit-preset-modal">
+    <div class="modal-content">
+        <div class="modal-header">编辑预设</div>
+        <input type="hidden" id="edit-preset-id">
+        <input type="text" id="edit-preset-name" class="settings-input" placeholder="预设名称">
+        <input type="text" id="edit-preset-url" class="settings-input" placeholder="API网址">
+        <input type="password" id="edit-preset-key" class="settings-input" placeholder="API密钥">
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="settings-btn primary" id="btn-save-edit" style="flex: 1;">保存</button>
+            <button class="settings-btn" id="btn-cancel-edit" style="flex: 1;">取消</button>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="wb-modal">
+    <div class="modal-content">
+        <div class="modal-header" id="wb-modal-title">添加世界书</div>
+        <input type="hidden" id="wb-id">
+        <input type="text" id="wb-title-input" class="settings-input" placeholder="设定标题 (如: 魔法学院设定)">
+        <div style="display: flex; gap: 10px;">
+            <select id="wb-scope" class="settings-input" style="flex: 1; cursor: pointer;">
+                <option value="global">全局世界书</option>
+                <option value="local">局部世界书</option>
+            </select>
+            <select id="wb-priority" class="settings-input" style="flex: 1; cursor: pointer;">
+                <option value="high">高优先级</option>
+                <option value="medium" selected>中优先级</option>
+                <option value="low">低优先级</option>
+            </select>
+        </div>
+        <select id="wb-trigger" class="settings-input" style="cursor: pointer;">
+            <option value="always">始终生效</option>
+            <option value="keyword">关键词生效</option>
+        </select>
+        <input type="text" id="wb-keyword-input" class="settings-input" placeholder="输入关键词 (多个用逗号分隔)" style="display: none;">
+        <textarea id="wb-content-input" class="settings-input textarea-custom" placeholder="输入世界书详细设定内容..."></textarea>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="settings-btn primary" id="btn-save-wb" style="flex: 1;">保存设定</button>
+            <button class="settings-btn" id="btn-cancel-wb" style="flex: 1;">取消</button>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="mask-edit-modal">
+    <div class="modal-content">
+        <div class="modal-header">编辑面具</div>
+        <input type="hidden" id="edit-mask-id">
+        <div class="mask-avatar-uploader" id="edit-mask-avatar-trigger" style="margin: 0 auto;"></div>
+        <input type="text" id="edit-mask-name" class="settings-input" placeholder="输入姓名">
+        <select id="edit-mask-gender" class="settings-input">
+            <option value="female">女</option>
+            <option value="male">男</option>
+            <option value="other">其他</option>
+        </select>
+        <textarea id="edit-mask-desc" class="settings-input textarea-custom" placeholder="输入详细设定..."></textarea>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="settings-btn primary" id="btn-update-mask" style="flex: 1;">保存修改</button>
+            <button class="settings-btn" id="btn-cancel-mask-edit" style="flex: 1;">取消</button>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="bind-wb-modal">
+    <div class="modal-content">
+        <div class="modal-header">点击选择世界书</div>
+        <div class="wb-list" id="bind-wb-list" style="max-height: 50vh; overflow-y: auto;">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="settings-btn primary" id="btn-confirm-bind-wb" style="flex: 1;">确定</button>
+            <button class="settings-btn" id="btn-cancel-bind-wb" style="flex: 1;">取消</button>
+        </div>
+    </div>
+</div>
+<!-- 新增：相机功能弹窗 -->
+<div class="modal-overlay" id="camera-modal" style="z-index: 2000;">
+    <div class="camera-card-container">
+        <div class="camera-card" id="camera-card">
+            <div class="camera-front" id="camera-front">
+                <div class="camera-icon-btn">
+                    <svg viewBox="0 0 24 24"><use href="#ic-fill-camera"/></svg>
+                </div>
+                <div class="camera-front-text">点击拍摄</div>
+            </div>
+            <div class="camera-back">
+                <div class="camera-back-header">
+                    <span>描述拍摄画面</span>
+                    <span id="btn-close-camera" style="cursor: pointer; color: var(--theme-pink-dark); font-size: 24px; line-height: 1;">&times;</span>
+                </div>
+                <textarea id="camera-desc-input" class="camera-textarea" placeholder="描述你拍到的画面，发送后角色会将其当作真实看到的场景..."></textarea>
+                <div class="camera-back-actions">
+                    <button class="settings-btn" id="btn-flip-to-front">取消</button>
+                    <button class="settings-btn primary" id="btn-send-camera">发送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 新增：发送语音弹窗 -->
+<div class="modal-overlay" id="voice-modal" style="z-index: 2000;">
+    <div class="modal-content" style="max-width: 320px;">
+        <div class="modal-header">发送语音</div>
+        <textarea id="voice-desc-input" class="settings-input textarea-custom" placeholder="输入你想说的语音文字内容..."></textarea>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="settings-btn" id="btn-close-voice" style="flex: 1;">取消</button>
+            <button class="settings-btn primary" id="btn-send-voice" style="flex: 1;">发送</button>
+        </div>
+    </div>
+</div>
+<!-- 新增：发送定位弹窗 -->
+<div class="modal-overlay" id="location-modal" style="z-index: 2000;">
+    <div class="modal-content" style="max-width: 320px;">
+        <div class="modal-header">发送定位</div>
+        <input type="text" id="location-name-input" class="settings-input" placeholder="输入地点名称 (如：樱花大道)">
+        <input type="text" id="location-distance-input" class="settings-input" placeholder="输入距离 (如：距离你1.2 km)" style="margin-top: 10px;">
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="settings-btn" id="btn-close-location" style="flex: 1;">取消</button>
+            <button class="settings-btn primary" id="btn-send-location" style="flex: 1;">发送</button>
+        </div>
+    </div>
+</div>
+<!-- 新增：查手机免责声明弹窗 -->
+<div class="modal-overlay" id="disclaimer-modal" style="z-index: 3000;">
+    <div class="modal-content" style="max-width: 320px; gap: 12px;">
+        <div class="modal-header" style="color: #ff6b81; font-size: 16px;">免责声明与未成年限制</div>
+        <div style="font-size: 12px; color: var(--theme-text-dark); line-height: 1.6; max-height: 40vh; overflow-y: auto; padding-right: 4px;">
+            本“查手机”功能仅供个人娱乐、剧情模拟与角色扮演使用。<br><br>
+            <strong>1. 未成年人限制：</strong>本功能可能包含虚构的成人向敏感剧情（如私密动态等），未满18周岁的未成年人请在监护人陪同下退出使用。<br>
+            <strong>2. 虚构声明：</strong>本功能生成的所有聊天、相册、账单、动态等均为AI虚构，与现实中任何真实人物、事件无关。<br>
+            <strong>3. 合规使用：</strong>请勿将生成的截图用于造谣、诽谤、诈骗等任何违法违规行为，否则后果自负。
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+            <input type="checkbox" id="chk-no-remind" style="width: 16px; height: 16px; accent-color: var(--theme-pink);">
+            <label for="chk-no-remind" style="font-size: 12px; color: #8a7b80; cursor: pointer; font-weight: 600;">我已满18岁并同意条款，不再提醒</label>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button class="settings-btn" id="btn-reject-disclaimer" style="flex: 1;">拒绝并退出</button>
+            <button class="settings-btn primary" id="btn-agree-disclaimer" style="flex: 1;">同意并继续</button>
+        </div>
+    </div>
+</div>
+<!-- 新增：聊天美化预设管理弹窗 -->
+<div class="modal-overlay" id="chat-style-preset-modal" style="z-index: 2500;">
+    <div class="modal-content">
+        <div class="modal-header">聊天美化预设</div>
+        <div class="preset-list" id="chat-style-preset-list" style="max-height: 50vh; overflow-y: auto;"></div>
+        <button class="settings-btn" id="btn-close-chat-style-preset" style="margin-top: 10px; width: 100%;">关闭</button>
+    </div>
+</div>
+<!-- 新增：查手机选择设备弹窗 -->
+<div class="modal-overlay" id="check-phone-modal" style="z-index: 1000;">
+    <div class="modal-content">
+        <div class="modal-header">选择检查的设备</div>
+        <div class="cp-device-list" id="check-phone-list" style="max-height: 50vh; overflow-y: auto; margin-top: 12px;">
+        </div>
+        <button class="settings-btn" id="btn-close-check-phone" style="margin-top: 14px; width: 100%; padding: 10px; font-size: 13px;">关闭</button>
+    </div>
+</div>
+<div class="theme-page" id="add-chat-page" style="z-index: 300;">
+    <div class="theme-header">
+        <span class="theme-back" id="add-chat-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+        <span class="theme-title">添加聊天</span>
+        <span style="width:24px;"></span>
+    </div>
+    <div class="theme-content">
+        <div class="theme-section-title">角色设定 (AI)</div>
+        <div class="settings-group" style="align-items: center;">
+            <div class="mask-avatar-uploader" id="chat-role-avatar-trigger"></div>
+            <input type="text" id="chat-role-name" class="settings-input" placeholder="输入角色姓名">
+            <select id="chat-role-gender" class="settings-input">
+                <option value="female">女</option>
+                <option value="male">男</option>
+                <option value="other">其他</option>
+            </select>
+            <textarea id="chat-role-desc" class="settings-input textarea-custom" placeholder="输入角色详细设定..."></textarea>
+        </div>
+        <div class="theme-section-title" style="margin-top: 20px;">我的设定 (用户)</div>
+        <div class="settings-group" style="align-items: center;">
+            <select id="chat-mask-select" class="settings-input">
+                <option value="">-- 选择面具预设 (可选) --</option>
+            </select>
+            <div class="mask-avatar-uploader" id="chat-user-avatar-trigger"></div>
+            <input type="text" id="chat-user-name" class="settings-input" placeholder="输入我的姓名">
+            <select id="chat-user-gender" class="settings-input">
+                <option value="female">女</option>
+                <option value="male">男</option>
+                <option value="other">其他</option>
+            </select>
+            <textarea id="chat-user-desc" class="settings-input textarea-custom" placeholder="输入我的详细设定..."></textarea>
+        </div>
+        <div class="theme-section-title" style="margin-top: 20px;">关联世界书</div>
+        <div class="settings-group">
+            <button class="settings-btn" id="btn-open-bind-wb">点击选择世界书 (已选 0 个)</button>
+        </div>
+        <button class="settings-btn primary" id="btn-save-chat-role" style="width: 100%; margin-top: 20px;">开始聊天</button>
+    </div>
+</div>
+<input type="file" id="chat-role-file-input" accept="image/*" style="display: none;">
+<input type="file" id="chat-user-file-input" accept="image/*" style="display: none;">
+<div class="theme-page" id="edit-chat-page" style="z-index: 300;">
+    <div class="theme-header">
+        <span class="theme-back" id="edit-chat-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+        <span class="theme-title">修改聊天</span>
+        <span style="width:24px;"></span>
+    </div>
+    <div class="theme-content">
+        <input type="hidden" id="edit-chat-id">
+        <div class="theme-section-title">角色设定 (AI)</div>
+        <div class="settings-group" style="align-items: center;">
+            <div class="mask-avatar-uploader" id="edit-chat-role-avatar-trigger"></div>
+            <input type="text" id="edit-chat-role-name" class="settings-input" placeholder="输入角色姓名">
+            <select id="edit-chat-role-gender" class="settings-input">
+                <option value="female">女</option>
+                <option value="male">男</option>
+                <option value="other">其他</option>
+            </select>
+            <textarea id="edit-chat-role-desc" class="settings-input textarea-custom" placeholder="输入角色详细设定..."></textarea>
+        </div>
+        <div class="theme-section-title" style="margin-top: 20px;">我的设定 (用户)</div>
+        <div class="settings-group" style="align-items: center;">
+            <div class="mask-avatar-uploader" id="edit-chat-user-avatar-trigger"></div>
+            <input type="text" id="edit-chat-user-name" class="settings-input" placeholder="输入我的姓名">
+            <select id="edit-chat-user-gender" class="settings-input">
+                <option value="female">女</option>
+                <option value="male">男</option>
+                <option value="other">其他</option>
+            </select>
+            <textarea id="edit-chat-user-desc" class="settings-input textarea-custom" placeholder="输入我的详细设定..."></textarea>
+        </div>
+        <div class="theme-section-title" style="margin-top: 20px;">绑定世界书</div>
+        <div class="settings-group">
+            <button class="settings-btn" id="btn-edit-bind-wb">点击选择世界书 (已选 0 个)</button>
+        </div>
+        <button class="settings-btn primary" id="btn-update-chat-role" style="width: 100%; margin-top: 20px;">保存修改</button>
+    </div>
+</div>
+<input type="file" id="edit-chat-role-file-input" accept="image/*" style="display: none;">
+<input type="file" id="edit-chat-user-file-input" accept="image/*" style="display: none;">
+<!-- 新增：查手机详情页面 (Code 1 融入) -->
+<div class="modal-overlay" id="phone-ui-modal" style="z-index: 2000; background: rgba(255, 255, 255, 0.35); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);">
+    <div class="phone-ui-container" style="background: transparent; padding: 0;">
+        <div class="phone-case">
+            <div class="hw-btn btn-silent"></div>
+            <div class="hw-btn btn-vol-up"></div>
+            <div class="hw-btn btn-vol-down"></div>
+            <div class="hw-btn btn-power"></div>
+            <div class="screen-bezel">
+                <div class="fake-screen">
+                    <div class="notch"><div class="camera-lens"></div></div>
+                    <div class="fake-status-bar">
+                        <span id="fake-phone-clock">00:00</span>
+                        <div class="fake-battery-icon"><div class="fake-battery-level" id="fake-battery-fill"></div></div>
+                    </div>
+                    <div class="fake-modal-overlay" id="fake-loading-modal" style="z-index: 2900;">
+                        <div class="fake-modal-box" style="width: 65%; text-align: center; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                            <svg viewBox="0 0 24 24" class="spin" style="width: 32px; height: 32px; fill: #C28291;"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                            <div class="fake-modal-body" id="fake-loading-text" style="font-weight: 700; color: #C28291; font-size: 13px;">正在入侵设备获取数据...</div>
+                        </div>
+                    </div>
+                    <div class="fake-modal-overlay" id="fake-image-modal">
+                        <div class="fake-modal-box">
+                            <div class="fake-modal-header">
+                                <h3 id="fake-modal-title">图片详情</h3>
+                                <button class="circle-btn" id="fake-modal-close" style="width: 28px; height: 28px;">
+                                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                                </button>
+                            </div>
+                            <div class="fake-modal-body" id="fake-modal-desc"></div>
+                        </div>
+                    </div>
+                    <div class="pages-container">
+                        <div class="fake-page active" id="page-msg">
+                            <div class="page-header">
+                                <div class="fake-page-title">消息</div>
+                                <button class="circle-btn fake-refresh-btn-specific" data-type="msg">
+                                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                                </button>
+                            </div>
+                            <div id="fake-msg-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="text-align:center; color:#A88D93; font-size: 12px; margin-top: 20px;">暂无数据，请点击右上角刷新</div>
+                            </div>
+                        </div>
+                        <!-- 查岗内的聊天详情页 -->
+                        <div class="fake-page" id="page-fake-chat-detail" style="background: #FFF5F7; z-index: 20; padding: 0;">
+                            <div style="height: 44px; display: flex; align-items: center; padding: 0 16px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,182,193,0.3); position: sticky; top: 0; z-index: 10;">
+                                <button id="btn-fake-chat-back" style="background:none; border:none; color:#C28291; display:flex; align-items:center; cursor:pointer; padding:0; position: relative; z-index: 2;">
+                                    <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor;"><use href="#ic-back"/></svg>
+                                </button>
+                                <div id="fake-chat-title" style="position: absolute; left: 0; right: 0; text-align: center; font-size:15px; font-weight:700; color:#4A3C3F; pointer-events: none;">名字</div>
+                            </div>
+                            <div id="fake-chat-content" style="padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; height: calc(100% - 44px);">
+                            </div>
+                        </div>
+                        <div class="fake-page" id="page-gallery">
+                            <div class="page-header">
+                                <div class="fake-page-title">相册</div>
+                                <button class="circle-btn fake-refresh-btn-specific" data-type="gallery">
+                                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                                </button>
+                            </div>
+                            <div class="gallery-grid" id="fake-gallery-grid">
+                                <div style="grid-column: 1 / -1; text-align:center; color:#A88D93; font-size: 12px; margin-top: 20px;">暂无相册数据，请点击右上角刷新</div>
+                            </div>
+                        </div>
+                        <div class="fake-page" id="page-notes">
+                            <div class="page-header">
+                                <div class="fake-page-title">备忘录</div>
+                                <button class="circle-btn fake-refresh-btn-specific" data-type="notes">
+                                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                                </button>
+                            </div>
+                            <div id="fake-notes-list" style="display: flex; flex-direction: column; padding-bottom: 20px;">
+                                <div style="text-align:center; color:#A88D93; font-size: 12px; margin-top: 20px;">暂无备忘录数据，请点击右上角刷新</div>
+                            </div>
+                        </div>
+                        <!-- 查岗内的备忘录详情页 -->
+                        <div class="fake-page" id="page-fake-note-detail" style="background: #FFF5F7; z-index: 20; padding: 0;">
+                            <div style="height: 44px; display: flex; align-items: center; padding: 0 16px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,182,193,0.3); position: sticky; top: 0; z-index: 10;">
+                                <button id="btn-fake-note-back" style="background:none; border:none; color:#C28291; display:flex; align-items:center; cursor:pointer; padding:0; position: relative; z-index: 2;">
+                                    <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:currentColor;"><use href="#ic-back"/></svg>
+                                </button>
+                                <div style="position: absolute; left: 0; right: 0; text-align: center; font-size:15px; font-weight:700; color:#4A3C3F; pointer-events: none;">备忘录</div>
+                            </div>
+                            <div style="padding: 24px 20px; overflow-y: auto; height: calc(100% - 44px); display: flex; flex-direction: column; justify-content: flex-start;">
+                                <h2 id="fake-note-detail-title" style="font-size: 22px; color: #4A3C3F; margin-bottom: 12px; line-height: 1.3;"></h2>
+                                <div id="fake-note-detail-time" style="font-size: 12px; color: #A88D93; margin-bottom: 24px; font-weight: 600;"></div>
+                                <div id="fake-note-detail-content" style="font-size: 15px; color: #5C4D50; line-height: 1.8; white-space: pre-wrap; word-break: break-word;"></div>
+                            </div>
+                        </div>
+                        <div class="fake-page" id="page-assets">
+                            <div class="page-header">
+                                <div class="fake-page-title">资产</div>
+                                <button class="circle-btn fake-refresh-btn-specific" data-type="assets">
+                                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                                </button>
+                            </div>
+                            <div class="skeleton-card" id="fake-assets-total-card" style="background: linear-gradient(135deg, #E6C4CB, #D4A5B0); color: white; height: 130px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 10px 25px rgba(212, 165, 176, 0.4); border:none;">
+                                <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px; text-align: center;">总资产 (元)</div>
+                                <div id="fake-assets-total" style="font-size: 30px; font-weight: bold; letter-spacing: 1px; text-align: center;">---</div>
+                            </div>
+                            <div class="section-title">近期账单</div>
+                            <div class="bill-list" id="fake-bill-list">
+                                <div style="text-align:center; color:#A88D93; font-size: 12px; margin-top: 20px; padding-bottom: 20px;">暂无账单数据，请点击右上角刷新</div>
+                            </div>
+                        </div>
+                        <div class="fake-page" id="page-browser">
+                            <div class="page-header">
+                                <div class="fake-page-title">浏览器</div>
+                                <button class="circle-btn fake-refresh-btn-specific" data-type="browser">
+                                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                                </button>
+                            </div>
+                            <div id="fake-browser-list" style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px;">
+                                <div style="text-align:center; color:#A88D93; font-size: 12px; margin-top: 20px;">暂无搜索记录，请点击右上角刷新</div>
+                            </div>
+                        </div>
+                                                <div class="fake-page" id="page-creator" style="padding: 10px 20px 110px 20px;">
+                            <div class="page-header">
+                                <div class="fake-page-title">主页</div>
+                                <button class="circle-btn fake-refresh-btn-specific" data-type="creator">
+                                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                                </button>
+                            </div>
+                            <div id="fake-creator-content" style="margin: 0 -20px;">
+                                <div style="text-align:center; color:#A88D93; font-size: 12px; margin-top: 20px;">暂无主页数据，请点击右上角刷新</div>
+                            </div>
+                        </div>
+                        </div>
+                    <div class="fake-dock-wrapper">
+                        <div class="fake-dock">
+                            <button class="fake-dock-btn active" data-target="page-msg"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></button>
+                            <button class="fake-dock-btn" data-target="page-gallery"><svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg></button>
+                            <button class="fake-dock-btn" data-target="page-notes"><svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></button>
+                            <button class="fake-dock-btn" data-target="page-assets"><svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.11.89-2 2-2h14c1.1 0 2 .89 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></button>
+                            <button class="fake-dock-btn" data-target="page-browser"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19zM12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1 1.1-.49 1.1-1.1-.49-1.1-1.1-1.1z"/></svg></button>
+                            <button class="fake-dock-btn" data-target="page-creator"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="home-indicator"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
