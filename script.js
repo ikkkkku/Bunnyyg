@@ -4809,11 +4809,14 @@ chatRealImageInput.addEventListener('change', (e) => {
         document.getElementById('dock-music-cover').classList.remove('playing');
     });
     
-    // 监听进度更新进度条
+    window.isDraggingProgress = false;
+
+    // 监听进度更新进度条 (增加防拖拽冲突)
     globalAudio.addEventListener('timeupdate', () => {
-        if (globalAudio.duration) {
+        if (globalAudio.duration && !window.isDraggingProgress) {
             const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
-            document.getElementById('music-progress-fill').style.width = percent + '%';
+            const fill = document.getElementById('music-progress-fill');
+            if(fill) fill.style.width = percent + '%';
         }
     });
 
@@ -4822,14 +4825,63 @@ chatRealImageInput.addEventListener('change', (e) => {
         playNextMusic();
     });
 
-    // 进度条点击跳转
-    document.getElementById('music-progress-container').addEventListener('click', (e) => {
+    // 进度条拖拽与点击逻辑
+    const progressContainerOut = document.getElementById('music-progress-container');
+    const updateProgressOut = (clientX) => {
         if (!globalAudio.duration) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
+        const rect = progressContainerOut.getBoundingClientRect();
+        let clickX = clientX - rect.left;
+        if (clickX < 0) clickX = 0;
+        if (clickX > rect.width) clickX = rect.width;
         const percent = clickX / rect.width;
-        globalAudio.currentTime = percent * globalAudio.duration;
-    });
+        const fill = document.getElementById('music-progress-fill');
+        if(fill) {
+            fill.style.transition = 'none';
+            fill.style.width = (percent * 100) + '%';
+        }
+        return percent;
+    };
+
+    if (progressContainerOut) {
+        progressContainerOut.addEventListener('mousedown', (e) => {
+            window.isDraggingProgress = true;
+            updateProgressOut(e.clientX);
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (window.isDraggingProgress) updateProgressOut(e.clientX);
+        });
+        document.addEventListener('mouseup', (e) => {
+            if (window.isDraggingProgress) {
+                window.isDraggingProgress = false;
+                const percent = updateProgressOut(e.clientX);
+                globalAudio.currentTime = percent * globalAudio.duration;
+                const fill = document.getElementById('music-progress-fill');
+                if(fill) fill.style.transition = 'width 0.1s linear';
+            }
+        });
+
+        progressContainerOut.addEventListener('touchstart', (e) => {
+            window.isDraggingProgress = true;
+            updateProgressOut(e.touches[0].clientX);
+        }, { passive: true });
+        document.addEventListener('touchmove', (e) => {
+            if (window.isDraggingProgress) {
+                updateProgressOut(e.touches[0].clientX);
+            }
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            if (window.isDraggingProgress) {
+                window.isDraggingProgress = false;
+                const fill = document.getElementById('music-progress-fill');
+                if (globalAudio.duration && fill) {
+                    const percent = parseFloat(fill.style.width) / 100;
+                    globalAudio.currentTime = percent * globalAudio.duration;
+                    fill.style.transition = 'width 0.1s linear';
+                }
+            }
+        });
+    }
+
 
     // Dock栏播放/暂停按钮点击
     document.getElementById('btn-dock-play').addEventListener('click', () => {
@@ -4946,24 +4998,14 @@ window.addEventListener('DOMContentLoaded', () => {
             if(playIcon) playIcon.innerHTML = '<use href="#ic-play"/>';
             if(dockCover) dockCover.classList.remove('playing');
         });
+        // 内层无需再次绑定拖拽事件，仅保留 timeupdate 监听并增加防冲突判断
         globalAudio.addEventListener('timeupdate', () => {
-            if (globalAudio.duration && progressFill) {
+            if (globalAudio.duration && progressFill && !window.isDraggingProgress) {
                 const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
                 progressFill.style.width = percent + '%';
             }
         });
         globalAudio.addEventListener('ended', playNextMusic);
-
-        const progressContainer = document.getElementById('music-progress-container');
-        if (progressContainer) {
-            progressContainer.addEventListener('click', (e) => {
-                if (!globalAudio.duration) return;
-                const rect = e.currentTarget.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const percent = clickX / rect.width;
-                globalAudio.currentTime = percent * globalAudio.duration;
-            });
-        }
 
         const btnDockPlay = document.getElementById('btn-dock-play');
         if (btnDockPlay) {
