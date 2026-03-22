@@ -3009,6 +3009,11 @@ ${dynamicExample}
         updatePreviewStyle('global-vp-container', getGlobalStyleObj());
     };
     [gsColor, gsSize, gsRadius, gsAvatar, gsCss, gsFrameScale, gsFrameX, gsFrameY].forEach(el => el.addEventListener('input', triggerGlobalPreview));
+    document.getElementById('btn-gs-apply-css').addEventListener('click', () => {
+        gsCss.blur(); // 强制失去焦点，收起 iOS 键盘
+        triggerGlobalPreview(); // 刷新预览
+    });
+
     document.getElementById('btn-gs-upload-frame').addEventListener('click', () => gsFrameFile.click());
     gsFrameFile.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -3064,6 +3069,10 @@ ${dynamicExample}
         updatePreviewStyle('personal-vp-container', getPersonalStyleObj());
     };
     [psColor, psSize, psRadius, psAvatar, psCss, psFrameScale, psFrameX, psFrameY].forEach(el => el.addEventListener('input', triggerPersonalPreview));
+    document.getElementById('btn-ps-apply-css').addEventListener('click', () => {
+        psCss.blur(); // 强制失去焦点，收起 iOS 键盘
+        triggerPersonalPreview(); // 刷新预览
+    });
     document.getElementById('btn-ps-upload-frame').addEventListener('click', () => psFrameFile.click());
     psFrameFile.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -4779,6 +4788,90 @@ chatRealImageInput.addEventListener('change', (e) => {
             });
         }
     });
+    // 全局音乐播放器对象与状态
+    const globalAudio = new Audio();
+    let currentPlayingMusicId = null;
+    let globalMusicList = []; // 用于上下首切换
+
+    // 监听音频播放与暂停，更新UI
+    globalAudio.addEventListener('play', () => {
+        document.getElementById('icon-dock-play').innerHTML = '<use href="#ic-pause"/>';
+        document.getElementById('dock-music-cover').classList.add('playing');
+    });
+    globalAudio.addEventListener('pause', () => {
+        document.getElementById('icon-dock-play').innerHTML = '<use href="#ic-play"/>';
+        document.getElementById('dock-music-cover').classList.remove('playing');
+    });
+    
+    // 监听进度更新进度条
+    globalAudio.addEventListener('timeupdate', () => {
+        if (globalAudio.duration) {
+            const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
+            document.getElementById('music-progress-fill').style.width = percent + '%';
+        }
+    });
+
+    // 播放结束自动下一首
+    globalAudio.addEventListener('ended', () => {
+        playNextMusic();
+    });
+
+    // 进度条点击跳转
+    document.getElementById('music-progress-container').addEventListener('click', (e) => {
+        if (!globalAudio.duration) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percent = clickX / rect.width;
+        globalAudio.currentTime = percent * globalAudio.duration;
+    });
+
+    // Dock栏播放/暂停按钮点击
+    document.getElementById('btn-dock-play').addEventListener('click', () => {
+        if (!globalAudio.src) return;
+        if (globalAudio.paused) {
+            globalAudio.play();
+        } else {
+            globalAudio.pause();
+        }
+    });
+
+    // 播放指定音乐的函数
+    async function playMusicById(id) {
+        const music = await bunnyDB.music.get(parseInt(id));
+        if (music) {
+            if (currentPlayingMusicId === music.id) {
+                // 如果点击的是正在播放的，则暂停/继续
+                if (globalAudio.paused) globalAudio.play();
+                else globalAudio.pause();
+                return;
+            }
+            currentPlayingMusicId = music.id;
+            globalAudio.src = music.audio;
+            globalAudio.play();
+            
+            const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
+            document.getElementById('dock-music-cover').src = coverSrc;
+            document.getElementById('dock-music-title').textContent = music.title;
+            document.getElementById('dock-music-singer').textContent = music.singer;
+        }
+    }
+
+    // 上一首
+    document.getElementById('btn-dock-prev').addEventListener('click', () => {
+        if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
+        let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
+        index = (index - 1 + globalMusicList.length) % globalMusicList.length;
+        playMusicById(globalMusicList[index].id);
+    });
+
+    // 下一首
+    function playNextMusic() {
+        if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
+        let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
+        index = (index + 1) % globalMusicList.length;
+        playMusicById(globalMusicList[index].id);
+    }
+    document.getElementById('btn-dock-next').addEventListener('click', playNextMusic);
     // --- 新增：音乐页面逻辑 ---
     const musicPage = document.getElementById('music-page');
     const musicListContent = document.getElementById('music-list-content');
@@ -4984,26 +5077,38 @@ chatRealImageInput.addEventListener('change', (e) => {
                         <div class="music-item-btn btn-play-music" data-id="${music.id}">
                             <svg viewBox="0 0 24 24"><use href="#ic-music-note"/></svg>
                         </div>
+                        <div class="music-item-btn btn-share-music" data-id="${music.id}">
+                            <svg viewBox="0 0 24 24"><use href="#ic-share"/></svg>
+                        </div>
                         <div class="music-item-btn btn-edit-music" data-id="${music.id}">
                             <svg viewBox="0 0 24 24"><use href="#ic-settings"/></svg>
                         </div>
                     </div>
+
                 `;
                 listContainer.appendChild(item);
             });
             
             musicListContent.appendChild(listContainer);
 
-            // 绑定播放按钮事件 (更新底部Dock栏UI)
+            // 保存当前列表供上下首切换使用
+            globalMusicList = musics;
+
+            // 绑定播放按钮事件 (真正播放音乐)
             document.querySelectorAll('.btn-play-music').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-id');
+                    playMusicById(id);
+                });
+            });
+            // 绑定分享按钮事件 (为后期分享给角色做准备)
+            document.querySelectorAll('.btn-share-music').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = e.currentTarget.getAttribute('data-id');
                     const music = await bunnyDB.music.get(parseInt(id));
                     if (music) {
-                        const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
-                        document.querySelector('.music-dock-cover').src = coverSrc;
-                        document.querySelector('.music-dock-title').textContent = music.title;
-                        document.querySelector('.music-dock-singer').textContent = music.singer;
+                        // TODO: 后期在这里对接发送给角色的逻辑
+                        alert(`即将把歌曲《${music.title}》分享给聊天角色...\n(分享功能模块已预留)`);
                     }
                 });
             });
@@ -5060,4 +5165,4 @@ chatRealImageInput.addEventListener('change', (e) => {
         } catch (err) {
             console.error('获取音乐列表失败', err);
         }
-                        }
+        }
