@@ -4417,3 +4417,198 @@ ${taskPrompt}
     document.getElementById('btn-close-chat-style-preset').addEventListener('click', () => {
         chatStylePresetModal.classList.remove('active');
     });
+    // --- 新增：表情包库完整逻辑 ---
+    let emojiData = { groups: [{ id: 'default', name: '默认' }], emojis: [] };
+    let currentEmojiGroup = 'default';
+    let isEmojiManageMode = false;
+
+    async function saveEmojiData() {
+        await localforage.setItem('bunny_emoji_data', emojiData);
+    }
+
+    function renderEmojiGroups() {
+        const nav = document.getElementById('emoji-group-nav');
+        nav.innerHTML = '';
+        emojiData.groups.forEach(g => {
+            const item = document.createElement('div');
+            item.className = `chat-group-item ${currentEmojiGroup === g.id ? 'active' : ''}`;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = g.name;
+            item.appendChild(nameSpan);
+
+            // 默认分组不允许删除
+            if (g.id !== 'default') {
+                const delBtn = document.createElement('span');
+                delBtn.className = 'group-del-btn';
+                delBtn.textContent = '×';
+                delBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    if(confirm(`确定删除分组【${g.name}】及其中所有表情包吗？`)) {
+                        emojiData.groups = emojiData.groups.filter(x => x.id !== g.id);
+                        emojiData.emojis = emojiData.emojis.filter(x => x.groupId !== g.id);
+                        if (currentEmojiGroup === g.id) currentEmojiGroup = 'default';
+                        await saveEmojiData();
+                        renderEmojiGroups();
+                        renderEmojis();
+                    }
+                };
+                item.appendChild(delBtn);
+            }
+
+            item.onclick = () => {
+                currentEmojiGroup = g.id;
+                renderEmojiGroups();
+                renderEmojis();
+            };
+            nav.appendChild(item);
+        });
+        // 添加分组按钮
+        const addBtn = document.createElement('div');
+        addBtn.className = 'chat-group-item';
+        addBtn.textContent = '+';
+        addBtn.onclick = () => {
+            document.getElementById('emoji-new-group-name').value = '';
+            document.getElementById('emoji-group-add-modal').classList.add('active');
+        };
+        nav.appendChild(addBtn);
+    }
+
+    function renderEmojis() {
+        const list = document.getElementById('emoji-list-content');
+        list.innerHTML = '';
+        const filtered = emojiData.emojis.filter(e => e.groupId === currentEmojiGroup);
+        if(filtered.length === 0) {
+            list.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#cbaeb4; font-size:13px; font-weight:600; margin-top:20px;">暂无表情包</div>';
+            return;
+        }
+        // 倒序展示，最新添加的在最前面
+        [...filtered].reverse().forEach(e => {
+            const item = document.createElement('div');
+            item.className = 'emoji-item';
+            item.innerHTML = `
+                <img src="${e.url}" alt="${e.desc}">
+                <div class="emoji-desc">${e.desc}</div>
+                <div class="emoji-del-btn" data-id="${e.id}">×</div>
+            `;
+            item.querySelector('.emoji-del-btn').onclick = async (ev) => {
+                ev.stopPropagation();
+                if(confirm(`确定删除表情包【${e.desc}】吗？`)) {
+                    emojiData.emojis = emojiData.emojis.filter(x => x.id !== e.id);
+                    await saveEmojiData();
+                    renderEmojis();
+                }
+            };
+            list.appendChild(item);
+        });
+    }
+
+    document.getElementById('emoji-back').addEventListener('click', () => {
+        document.getElementById('emoji-page').classList.remove('active');
+    });
+
+    // 管理模式切换
+    document.getElementById('btn-emoji-manage').addEventListener('click', () => {
+        isEmojiManageMode = !isEmojiManageMode;
+        document.getElementById('btn-emoji-manage').textContent = isEmojiManageMode ? '完成' : '管理';
+        if(isEmojiManageMode) {
+            document.getElementById('emoji-list-content').classList.add('manage-mode');
+            document.getElementById('emoji-group-nav').classList.add('manage-mode');
+        } else {
+            document.getElementById('emoji-list-content').classList.remove('manage-mode');
+            document.getElementById('emoji-group-nav').classList.remove('manage-mode');
+        }
+    });
+
+    // 打开批量添加弹窗
+    document.getElementById('btn-emoji-add').addEventListener('click', () => {
+        const select = document.getElementById('emoji-group-select');
+        select.innerHTML = '';
+        emojiData.groups.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = g.name;
+            if(g.id === currentEmojiGroup) opt.selected = true;
+            select.appendChild(opt);
+        });
+        document.getElementById('emoji-batch-input').value = '';
+        document.getElementById('emoji-add-modal').classList.add('active');
+    });
+
+    document.getElementById('btn-close-emoji-add').addEventListener('click', () => {
+        document.getElementById('emoji-add-modal').classList.remove('active');
+    });
+
+    // 保存批量表情包
+    document.getElementById('btn-save-emoji-add').addEventListener('click', async () => {
+        const groupId = document.getElementById('emoji-group-select').value;
+        const text = document.getElementById('emoji-batch-input').value.trim();
+        if(!text) { alert('请输入表情包内容'); return; }
+        const lines = text.split('\n');
+        let addedCount = 0;
+        lines.forEach(line => {
+            const trimLine = line.trim();
+            if(!trimLine) return;
+            // 通过最后一个空格分割，支持描述中包含空格
+            const lastSpaceIdx = trimLine.lastIndexOf(' ');
+            if(lastSpaceIdx !== -1) {
+                const desc = trimLine.substring(0, lastSpaceIdx).trim();
+                const url = trimLine.substring(lastSpaceIdx + 1).trim();
+                if(desc && url) {
+                    emojiData.emojis.push({
+                        id: Date.now().toString() + Math.random().toString().slice(2, 6),
+                        groupId: groupId,
+                        desc: desc,
+                        url: url
+                    });
+                    addedCount++;
+                }
+            }
+        });
+        if(addedCount > 0) {
+            await saveEmojiData();
+            document.getElementById('emoji-add-modal').classList.remove('active');
+            renderEmojis();
+            alert(`成功添加 ${addedCount} 个表情包`);
+        } else {
+            alert('未识别到正确的格式，请确保格式为「描述 URL」，中间用空格隔开。');
+        }
+    });
+
+    document.getElementById('btn-close-emoji-group').addEventListener('click', () => {
+        document.getElementById('emoji-group-add-modal').classList.remove('active');
+    });
+
+    // 保存新分组
+    document.getElementById('btn-save-emoji-group').addEventListener('click', async () => {
+        const name = document.getElementById('emoji-new-group-name').value.trim();
+        if(!name) { alert('请输入分组名称'); return; }
+        const newId = 'g_' + Date.now().toString();
+        emojiData.groups.push({ id: newId, name: name });
+        currentEmojiGroup = newId;
+        await saveEmojiData();
+        document.getElementById('emoji-group-add-modal').classList.remove('active');
+        renderEmojiGroups();
+        renderEmojis();
+    });
+
+    // 绑定“我的”页面中“表情包库”入口
+    document.querySelectorAll('.user-menu-item').forEach(item => {
+        const textEl = item.querySelector('span');
+        if (textEl && textEl.textContent === '表情包库') {
+            item.addEventListener('click', async () => {
+                const data = await localforage.getItem('bunny_emoji_data');
+                if(data) {
+                    emojiData = data;
+                }
+                currentEmojiGroup = 'default';
+                isEmojiManageMode = false;
+                document.getElementById('btn-emoji-manage').textContent = '管理';
+                document.getElementById('emoji-list-content').classList.remove('manage-mode');
+                document.getElementById('emoji-group-nav').classList.remove('manage-mode');
+                renderEmojiGroups();
+                renderEmojis();
+                document.getElementById('emoji-page').classList.add('active');
+            });
+        }
+    });
