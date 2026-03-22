@@ -4794,142 +4794,6 @@ chatRealImageInput.addEventListener('change', (e) => {
             });
         }
     });
-    // 全局音乐播放器对象与状态
-    const globalAudio = new Audio();
-    let currentPlayingMusicId = null;
-    let globalMusicList = []; // 用于上下首切换
-
-    // 监听音频播放与暂停，更新UI
-    globalAudio.addEventListener('play', () => {
-        document.getElementById('icon-dock-play').innerHTML = '<use href="#ic-pause"/>';
-        document.getElementById('dock-music-cover').classList.add('playing');
-    });
-    globalAudio.addEventListener('pause', () => {
-        document.getElementById('icon-dock-play').innerHTML = '<use href="#ic-play"/>';
-        document.getElementById('dock-music-cover').classList.remove('playing');
-    });
-    
-    window.isDraggingProgress = false;
-
-    // 监听进度更新进度条 (增加防拖拽冲突)
-    globalAudio.addEventListener('timeupdate', () => {
-        if (globalAudio.duration && !window.isDraggingProgress) {
-            const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
-            const fill = document.getElementById('music-progress-fill');
-            if(fill) fill.style.width = percent + '%';
-        }
-    });
-
-    // 播放结束自动下一首
-    globalAudio.addEventListener('ended', () => {
-        playNextMusic();
-    });
-
-    // 进度条拖拽与点击逻辑
-    const progressContainerOut = document.getElementById('music-progress-container');
-    const updateProgressOut = (clientX) => {
-        if (!globalAudio.duration) return;
-        const rect = progressContainerOut.getBoundingClientRect();
-        let clickX = clientX - rect.left;
-        if (clickX < 0) clickX = 0;
-        if (clickX > rect.width) clickX = rect.width;
-        const percent = clickX / rect.width;
-        const fill = document.getElementById('music-progress-fill');
-        if(fill) {
-            fill.style.transition = 'none';
-            fill.style.width = (percent * 100) + '%';
-        }
-        return percent;
-    };
-
-    if (progressContainerOut) {
-        progressContainerOut.addEventListener('mousedown', (e) => {
-            window.isDraggingProgress = true;
-            updateProgressOut(e.clientX);
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (window.isDraggingProgress) updateProgressOut(e.clientX);
-        });
-        document.addEventListener('mouseup', (e) => {
-            if (window.isDraggingProgress) {
-                window.isDraggingProgress = false;
-                const percent = updateProgressOut(e.clientX);
-                globalAudio.currentTime = percent * globalAudio.duration;
-                const fill = document.getElementById('music-progress-fill');
-                if(fill) fill.style.transition = 'width 0.1s linear';
-            }
-        });
-
-        progressContainerOut.addEventListener('touchstart', (e) => {
-            window.isDraggingProgress = true;
-            updateProgressOut(e.touches[0].clientX);
-        }, { passive: true });
-        document.addEventListener('touchmove', (e) => {
-            if (window.isDraggingProgress) {
-                updateProgressOut(e.touches[0].clientX);
-            }
-        }, { passive: true });
-        document.addEventListener('touchend', (e) => {
-            if (window.isDraggingProgress) {
-                window.isDraggingProgress = false;
-                const fill = document.getElementById('music-progress-fill');
-                if (globalAudio.duration && fill) {
-                    const percent = parseFloat(fill.style.width) / 100;
-                    globalAudio.currentTime = percent * globalAudio.duration;
-                    fill.style.transition = 'width 0.1s linear';
-                }
-            }
-        });
-    }
-
-
-    // Dock栏播放/暂停按钮点击
-    document.getElementById('btn-dock-play').addEventListener('click', () => {
-        if (!globalAudio.src) return;
-        if (globalAudio.paused) {
-            globalAudio.play();
-        } else {
-            globalAudio.pause();
-        }
-    });
-
-    // 播放指定音乐的函数
-    async function playMusicById(id) {
-        const music = await bunnyDB.music.get(parseInt(id));
-        if (music) {
-            if (currentPlayingMusicId === music.id) {
-                // 如果点击的是正在播放的，则暂停/继续
-                if (globalAudio.paused) globalAudio.play();
-                else globalAudio.pause();
-                return;
-            }
-            currentPlayingMusicId = music.id;
-            globalAudio.src = music.audio;
-            globalAudio.play();
-            
-            const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
-            document.getElementById('dock-music-cover').src = coverSrc;
-            document.getElementById('dock-music-title').textContent = music.title;
-            document.getElementById('dock-music-singer').textContent = music.singer;
-        }
-    }
-
-    // 上一首
-    document.getElementById('btn-dock-prev').addEventListener('click', () => {
-        if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
-        let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
-        index = (index - 1 + globalMusicList.length) % globalMusicList.length;
-        playMusicById(globalMusicList[index].id);
-    });
-
-    // 下一首
-    function playNextMusic() {
-        if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
-        let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
-        index = (index + 1) % globalMusicList.length;
-        playMusicById(globalMusicList[index].id);
-    }
-    document.getElementById('btn-dock-next').addEventListener('click', playNextMusic);
 // ==========================================
 // --- 音乐应用完整逻辑模块 (防崩溃安全版) ---
 // ==========================================
@@ -4989,6 +4853,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const playIcon = document.getElementById('icon-dock-play');
         const dockCover = document.getElementById('dock-music-cover');
         const progressFill = document.getElementById('music-progress-fill');
+        const progressContainer = document.getElementById('music-progress-container');
 
         globalAudio.addEventListener('play', () => {
             if(playIcon) playIcon.innerHTML = '<use href="#ic-pause"/>';
@@ -4998,7 +4863,9 @@ window.addEventListener('DOMContentLoaded', () => {
             if(playIcon) playIcon.innerHTML = '<use href="#ic-play"/>';
             if(dockCover) dockCover.classList.remove('playing');
         });
-        // 内层无需再次绑定拖拽事件，仅保留 timeupdate 监听并增加防冲突判断
+
+        window.isDraggingProgress = false;
+
         globalAudio.addEventListener('timeupdate', () => {
             if (globalAudio.duration && progressFill && !window.isDraggingProgress) {
                 const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
@@ -5006,6 +4873,61 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
         globalAudio.addEventListener('ended', playNextMusic);
+
+        // 进度条拖拽与点击逻辑
+        const updateProgress = (clientX) => {
+            if (!globalAudio.duration || !progressContainer) return;
+            const rect = progressContainer.getBoundingClientRect();
+            let clickX = clientX - rect.left;
+            if (clickX < 0) clickX = 0;
+            if (clickX > rect.width) clickX = rect.width;
+            const percent = clickX / rect.width;
+            if(progressFill) {
+                progressFill.style.transition = 'none';
+                progressFill.style.width = (percent * 100) + '%';
+            }
+            return percent;
+        };
+
+        if (progressContainer) {
+            progressContainer.addEventListener('mousedown', (e) => {
+                window.isDraggingProgress = true;
+                updateProgress(e.clientX);
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (window.isDraggingProgress) updateProgress(e.clientX);
+            });
+            document.addEventListener('mouseup', (e) => {
+                if (window.isDraggingProgress) {
+                    window.isDraggingProgress = false;
+                    const percent = updateProgress(e.clientX);
+                    if (percent !== undefined) {
+                        globalAudio.currentTime = percent * globalAudio.duration;
+                    }
+                    if(progressFill) progressFill.style.transition = 'width 0.1s linear';
+                }
+            });
+
+            progressContainer.addEventListener('touchstart', (e) => {
+                window.isDraggingProgress = true;
+                updateProgress(e.touches[0].clientX);
+            }, { passive: true });
+            document.addEventListener('touchmove', (e) => {
+                if (window.isDraggingProgress) {
+                    updateProgress(e.touches[0].clientX);
+                }
+            }, { passive: true });
+            document.addEventListener('touchend', (e) => {
+                if (window.isDraggingProgress) {
+                    window.isDraggingProgress = false;
+                    if (globalAudio.duration && progressFill) {
+                        const percent = parseFloat(progressFill.style.width) / 100;
+                        globalAudio.currentTime = percent * globalAudio.duration;
+                        progressFill.style.transition = 'width 0.1s linear';
+                    }
+                }
+            });
+        }
 
         const btnDockPlay = document.getElementById('btn-dock-play');
         if (btnDockPlay) {
