@@ -716,6 +716,19 @@ document.querySelectorAll('.btn-del-preset').forEach(btn => {
         phoneCheckRecords: '++id, targetId, checkTime, type', // 新增查岗记录表
         music: '++id, title, singer' // 新增音乐表
     });
+    // --- 核心数据库初始化 ---
+    const bunnyDB = new Dexie("BunnyAppDB");
+    bunnyDB.version(3).stores({
+        chatHistory: '++id, roleId, timestamp',
+        characters: 'id, name, avatar',
+        worldBook: 'id, title', 
+        masks: 'id, name',
+        album: '++id, category',
+        coupleSpace: 'key, value',
+        wallet: '++id, type, amount',
+        phoneCheckRecords: '++id, targetId, checkTime, type', // 查岗记录表
+        music: '++id, title, singer' // 音乐表
+    });
     const chatPage = document.getElementById('chat-page');
     document.querySelectorAll('.app-item').forEach(item => {
         const nameEl = item.querySelector('.app-name');
@@ -5165,4 +5178,4 @@ chatRealImageInput.addEventListener('change', (e) => {
         } catch (err) {
             console.error('获取音乐列表失败', err);
         }
-                               }
+                                    }
