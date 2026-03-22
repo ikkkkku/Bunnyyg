@@ -1559,10 +1559,11 @@ document.getElementById('bm-copy').addEventListener('click', () => {
             else if (parsed.type === 'Image') quoteTextDisplay.textContent = `回复 ${name}：[图片]`;
             else if (parsed.type === 'voice_message') quoteTextDisplay.textContent = `回复 ${name}：[语音] ${parsed.content}`;
             else if (parsed.type === 'location') quoteTextDisplay.textContent = `回复 ${name}：[定位] ${parsed.name}`;
-            else quoteTextDisplay.textContent = `回复 ${name}：${msg.content.replace(/\n/g, ' ')}`;
+            else quoteTextDisplay.textContent = `回复 ${name}：\n${msg.content}`;
         } catch(e) {
-            quoteTextDisplay.textContent = `回复 ${name}：${msg.content.replace(/\n/g, ' ')}`;
+            quoteTextDisplay.textContent = `回复 ${name}：\n${msg.content}`;
         }
+
         quoteBar.classList.add('active');
     });
 document.getElementById('btn-quote-close').addEventListener('click', () => {
@@ -1658,9 +1659,19 @@ document.getElementById('bm-regen').addEventListener('click', async () => {
     };
     window.jumpToMsg = (id) => {
         const el = document.querySelector(`.msg-row[data-id="${id}"]`);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (el) {
+            const container = document.getElementById('chat-detail-content');
+            const elTop = el.offsetTop;
+            const containerHalf = container.clientHeight / 2;
+            const elHalf = el.clientHeight / 2;
+            container.scrollTo({ top: elTop - containerHalf + elHalf, behavior: 'smooth' });
+            el.style.transition = 'background-color 0.3s';
+            el.style.backgroundColor = 'rgba(255, 182, 193, 0.3)';
+            el.style.borderRadius = '12px';
+            setTimeout(() => { el.style.backgroundColor = 'transparent'; }, 1500);
+        }
     };
-    document.getElementById('chat-detail-back').addEventListener('click', () => {
+document.getElementById('chat-detail-back').addEventListener('click', () => {
         chatDetailPage.classList.remove('active');
         currentActiveChat = null;
         chatPlusMenu.classList.remove('active');
