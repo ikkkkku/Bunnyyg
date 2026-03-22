@@ -4872,13 +4872,13 @@ chatRealImageInput.addEventListener('change', (e) => {
         playMusicById(globalMusicList[index].id);
     }
     document.getElementById('btn-dock-next').addEventListener('click', playNextMusic);
-    // ==========================================
+// ==========================================
 // --- 音乐应用完整逻辑模块 (防崩溃安全版) ---
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     try {
         const musicPage = document.getElementById('music-page');
-        if (!musicPage) return; // 如果HTML没加，安全退出，绝不影响查手机等功能
+        if (!musicPage) return; 
         
         const musicListContent = document.getElementById('music-list-content');
         const btnAddMusic = document.getElementById('btn-add-music');
@@ -5254,6 +5254,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     } catch (e) {
-        console.error("音乐模块加载出错，但不影响其他功能：", e);
+        console.error("音乐模块加载出错：", e);
     }
 });
+
