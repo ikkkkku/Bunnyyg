@@ -1509,7 +1509,15 @@ chatDetailContent.appendChild(bubbleMenu);
             const jId = jumpBtn.getAttribute('data-jump-id');
             const el = document.querySelector(`.msg-row[data-id="${jId}"]`);
             if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const container = document.getElementById('chat-detail-content');
+                const elTop = el.offsetTop;
+                const containerHalf = container.clientHeight / 2;
+                const elHalf = el.clientHeight / 2;
+                container.scrollTo({ top: elTop - containerHalf + elHalf, behavior: 'smooth' });
+                el.style.transition = 'background-color 0.3s';
+                el.style.backgroundColor = 'rgba(255, 182, 193, 0.3)';
+                el.style.borderRadius = '12px';
+                setTimeout(() => { el.style.backgroundColor = 'transparent'; }, 1500);
             } else {
                 alert('该消息位于更早的历史记录中，请先点击上方“展开历史对话”加载后再尝试跳转。');
             }
