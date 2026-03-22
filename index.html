@@ -20,6 +20,7 @@
 <svg class="svg-defs">
     <defs>
         <path id="ic-music-note" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        <path id="ic-share" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
         <path id="ic-diary" d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm2 4v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h6v-2H8z"/>
         <path id="ic-shop" d="M16 6V4a4 4 0 00-8 0v2H4v14a2 2 0 002 2h12a2 2 0 002-2V6h-4zM10 4a2 2 0 014 0v2h-4V4zm6 4v2a1 1 0 11-2 0V8h-4v2a1 1 0 11-2 0V8H6v12h12V8h-2z"/>
         <path id="ic-forum" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
@@ -33,6 +34,7 @@
         <path id="ic-world" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
         <path id="ic-settings" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
         <path id="ic-play" d="M8 5v14l11-7z"/>
+        <path id="ic-pause" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
         <path id="ic-skip" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
         <path id="ic-add" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         <path id="ic-back" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
@@ -747,10 +749,12 @@
                     </div>
                 </div>
                 <textarea id="gs-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码 (建议加 !important)"></textarea>
+                <button class="settings-btn primary" id="btn-gs-apply-css" style="margin-top: 10px; width: 100%;">应用 CSS</button>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="settings-btn" id="btn-gs-save-preset" style="flex: 1;">存为预设</button>
                     <button class="settings-btn" id="btn-gs-manage-preset" style="flex: 1;">管理预设</button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -820,13 +824,13 @@
                     </div>
                 </div>
                 <textarea id="ps-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码 (建议加 !important)"></textarea>
+                <button class="settings-btn primary" id="btn-ps-apply-css" style="margin-top: 10px; width: 100%;">应用 CSS</button>
 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="settings-btn" id="btn-ps-save-preset" style="flex: 1;">存为预设</button>
                     <button class="settings-btn" id="btn-ps-manage-preset" style="flex: 1;">管理预设</button>
                 </div>
-                <button class="settings-btn" id="btn-ps-clear" style="color: #ff6b81; margin-top: 4px;">清除专属装扮 (恢复全局)</button>
-            </div>
+
         </div>
     </div>
 </div>
@@ -842,17 +846,20 @@
         </div>
         <!-- 底部音乐播放栏 -->
         <div class="music-dock-bar">
+            <div class="music-progress-container" id="music-progress-container">
+                <div class="music-progress-fill" id="music-progress-fill"></div>
+            </div>
             <div class="music-dock-left">
-                <img src="https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80" class="music-dock-cover" alt="cover">
+                <img src="https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80" class="music-dock-cover" id="dock-music-cover" alt="cover">
                 <div class="music-dock-info">
-                    <div class="music-dock-title">恋爱二重奏</div>
-                    <div class="music-dock-singer">兔兔丸</div>
+                    <div class="music-dock-title" id="dock-music-title">未知歌曲</div>
+                    <div class="music-dock-singer" id="dock-music-singer">未知歌手</div>
                 </div>
             </div>
             <div class="music-dock-controls">
-                <svg viewBox="0 0 24 24" style="transform: scale(-1, 1);"><use href="#ic-skip"/></svg>
-                <div class="play-btn"><svg viewBox="0 0 24 24"><use href="#ic-play"/></svg></div>
-                <svg viewBox="0 0 24 24"><use href="#ic-skip"/></svg>
+                <svg viewBox="0 0 24 24" style="transform: scale(-1, 1);" id="btn-dock-prev"><use href="#ic-skip"/></svg>
+                <div class="play-btn" id="btn-dock-play"><svg viewBox="0 0 24 24" id="icon-dock-play"><use href="#ic-play"/></svg></div>
+                <svg viewBox="0 0 24 24" id="btn-dock-next"><use href="#ic-skip"/></svg>
             </div>
             <div class="music-dock-menu">
                 <svg viewBox="0 0 24 24"><use href="#ic-menu"/></svg>
@@ -1287,4 +1294,4 @@
 </div>
 <script src="script.js"></script>
 </body>
-            </html>
+        </html>
