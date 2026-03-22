@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -629,6 +629,53 @@
         <div class="summary-tab-content" id="tab-summary"></div>
         <div class="summary-tab-content" id="tab-agreement"></div>
     </div>
+    <!-- 新增：表情包库页面 -->
+    <div class="theme-page" id="emoji-page" style="z-index: 500;">
+        <div class="theme-header">
+            <span class="theme-back" id="emoji-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span class="theme-title">表情包库</span>
+            <div style="display: flex; gap: 14px; align-items: center;">
+                <span class="chat-header-btn" id="btn-emoji-manage" style="font-size: 14px;">管理</span>
+                <span class="chat-header-btn" id="btn-emoji-add"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-add"/></svg></span>
+            </div>
+        </div>
+        <div class="chat-group-nav" id="emoji-group-nav" style="margin-top: 0; padding-top: 12px; overflow-x: auto;">
+            <!-- 动态生成分组 -->
+        </div>
+        <div class="theme-content" style="padding-top: 16px;">
+            <div class="emoji-grid" id="emoji-list-content">
+                <!-- 动态生成表情包 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 表情包添加弹窗 -->
+    <div class="modal-overlay" id="emoji-add-modal" style="z-index: 2500;">
+        <div class="modal-content">
+            <div class="modal-header">批量添加表情包</div>
+            <select id="emoji-group-select" class="settings-input" style="cursor: pointer;">
+                <!-- 动态生成分组选项 -->
+            </select>
+            <textarea id="emoji-batch-input" class="settings-input textarea-custom" placeholder="输入格式：描述 URL&#10;支持多行批量添加，描述与URL之间用空格隔开" style="height: 150px;"></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="settings-btn" id="btn-close-emoji-add" style="flex: 1;">取消</button>
+                <button class="settings-btn primary" id="btn-save-emoji-add" style="flex: 1;">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加分组弹窗 -->
+    <div class="modal-overlay" id="emoji-group-add-modal" style="z-index: 2500;">
+        <div class="modal-content">
+            <div class="modal-header">添加新分组</div>
+            <input type="text" id="emoji-new-group-name" class="settings-input" placeholder="输入分组名称">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="settings-btn" id="btn-close-emoji-group" style="flex: 1;">取消</button>
+                <button class="settings-btn primary" id="btn-save-emoji-group" style="flex: 1;">保存</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 新增：全局聊天美化专属页面 -->
     <div class="theme-page" id="global-style-page" style="z-index: 700;">
         <div class="theme-header">
@@ -1172,4 +1219,4 @@
 </div>
 <script src="script.js"></script>
 </body>
-</html>
+                                                                        </html>
