@@ -19,6 +19,7 @@
 <body>
 <svg class="svg-defs">
     <defs>
+        <path id="ic-music-note" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
         <path id="ic-diary" d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm2 4v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h6v-2H8z"/>
         <path id="ic-shop" d="M16 6V4a4 4 0 00-8 0v2H4v14a2 2 0 002 2h12a2 2 0 002-2V6h-4zM10 4a2 2 0 014 0v2h-4V4zm6 4v2a1 1 0 11-2 0V8h-4v2a1 1 0 11-2 0V8H6v12h12V8h-2z"/>
         <path id="ic-forum" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.2L4 17.2V4h16v12z"/>
@@ -836,8 +837,8 @@
             <span class="theme-title">音乐</span>
             <span class="theme-back" id="btn-add-music" style="color: var(--theme-pink-dark);"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-add"/></svg></span>
         </div>
-        <div class="theme-content" style="padding-bottom: 100px;">
-            <div style="text-align:center; color:#cbaeb4; font-size: 13px; font-weight:600; margin-top:40px;">暂无本地音乐，点击右上角添加</div>
+        <div class="theme-content" style="padding-bottom: 100px;" id="music-list-content">
+            <!-- 歌曲列表将渲染在这里 -->
         </div>
         <!-- 底部音乐播放栏 -->
         <div class="music-dock-bar">
@@ -856,6 +857,39 @@
             <div class="music-dock-menu">
                 <svg viewBox="0 0 24 24"><use href="#ic-menu"/></svg>
             </div>
+        </div>
+    </div>
+    <!-- 新增：添加/编辑音乐弹窗 -->
+    <div class="modal-overlay" id="music-edit-modal" style="z-index: 2500;">
+        <div class="modal-content">
+            <div class="modal-header" id="music-modal-title">添加音乐</div>
+            <input type="hidden" id="music-edit-id">
+            
+            <div class="settings-group">
+                <div style="display: flex; justify-content: center;">
+                    <div class="mask-avatar-uploader" id="music-cover-trigger" style="border-radius: 16px;"></div>
+                </div>
+                <input type="file" id="music-cover-input" accept="image/*" style="display: none;">
+                
+                <input type="text" id="music-title-input" class="settings-input" placeholder="输入歌曲名">
+                <input type="text" id="music-singer-input" class="settings-input" placeholder="输入歌手名">
+                
+                <input type="text" id="music-url-input" class="settings-input" placeholder="输入音源 URL (或点击下方上传本地文件)">
+                
+                <div class="music-file-upload-row">
+                    <div class="music-file-btn" id="btn-upload-audio">上传本地音源</div>
+                    <input type="file" id="music-audio-input" accept="audio/*" style="display: none;">
+                    
+                    <div class="music-file-btn" id="btn-upload-lrc">上传滚动歌词 (.lrc)</div>
+                    <input type="file" id="music-lrc-input" accept=".lrc" style="display: none;">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="settings-btn" id="btn-close-music-modal" style="flex: 1;">取消</button>
+                <button class="settings-btn primary" id="btn-save-music" style="flex: 1;">保存</button>
+            </div>
+            <button class="settings-btn" id="btn-del-music" style="color: #ff6b81; margin-top: 10px; display: none;">删除歌曲</button>
         </div>
     </div>
 <div class="context-menu" id="context-menu">
@@ -1253,4 +1287,4 @@
 </div>
 <script src="script.js"></script>
 </body>
-                    </html>
+            </html>
