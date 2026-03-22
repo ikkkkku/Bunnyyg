@@ -491,9 +491,14 @@
             alert('请先填写API网址和密钥');
             return;
         }
-        if (!url.endsWith('/v1') && !url.endsWith('/v1/')) {
-            url = url.replace(/\/+$/, '') + '/v1';
+        url = url.replace(/\/+$/, '');
+        try {
+            const u = new URL(url);
+            if (u.pathname === '/' || u.pathname === '') url += '/v1';
+        } catch (e) {
+            if (!url.endsWith('/v1')) url += '/v1';
         }
+
         btnFetchModels.textContent = '拉取中...';
         btnFetchModels.disabled = true;
         try {
@@ -1307,8 +1312,14 @@ document.querySelectorAll('.btn-del-preset').forEach(btn => {
         bpmEl.textContent = "感知中...";
         try {
             let apiUrl = config.url.replace(/\/+$/, '');
-            if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+            try {
+                const u = new URL(apiUrl);
+                if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
+            } catch (e) {
+                if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+            }
             const msgs = await bunnyDB.chatHistory.where('roleId').equals(chatId).reverse().limit(8).toArray();
+
             msgs.reverse();
             const historyStr = msgs.map(m => {
                 let text = m.content;
@@ -2126,7 +2137,12 @@ document.getElementById('chat-detail-back').addEventListener('click', () => {
                 throw new Error('请先在设置页面配置并保存API信息！');
             }
             let apiUrl = config.url.replace(/\/+$/, '');
-            if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+            try {
+                const u = new URL(apiUrl);
+                if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
+            } catch (e) {
+                if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+            }
             let wbText = '';
             if (chat.bindWbs && chat.bindWbs.length > 0) {
                 const wbs = await bunnyDB.worldBook.where('id').anyOf(chat.bindWbs).toArray();
@@ -3347,7 +3363,12 @@ document.getElementById('btn-cs-block').addEventListener('click', async () => {
 对话记录：
 ${contextText}`;
         let apiUrl = config.url.replace(/\/+$/, '');
-        if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+        try {
+            const u = new URL(apiUrl);
+            if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
+        } catch (e) {
+            if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+        }
         try {
             const response = await fetch(`${apiUrl}/chat/completions`, {
                 method: 'POST',
@@ -4039,7 +4060,12 @@ ${taskPrompt}
   ${formatPrompt}
 }`;
                 let apiUrl = config.url.replace(/\/+$/, '');
-                if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+                try {
+                    const u = new URL(apiUrl);
+                    if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
+                } catch (e) {
+                    if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+                }
                 const response = await fetch(`${apiUrl}/chat/completions`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${config.key}`, 'Content-Type': 'application/json' },
