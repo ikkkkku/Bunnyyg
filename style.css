@@ -1799,8 +1799,8 @@ padding: 0;
         cursor: pointer;
     }
     .music-dock-controls .play-btn svg {
-        width: 28px;
-        height: 28px;
+        width: 22px;
+        height: 22px;
     }
     .music-dock-menu {
         margin-left: 12px;
@@ -1814,4 +1814,106 @@ padding: 0;
         height: 22px;
         fill: currentColor;
         cursor: pointer;
-                      }
+    }
+    /* --- 新增：音乐列表与弹窗样式 --- */
+    .music-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .music-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--theme-border);
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(255, 182, 193, 0.15);
+    }
+    .music-item-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        overflow: hidden;
+    }
+    .music-item-cover {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1px solid rgba(255,255,255,0.8);
+        box-shadow: 0 2px 8px rgba(255,182,193,0.3);
+        flex-shrink: 0;
+    }
+    .music-item-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .music-item-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--theme-text-dark);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .music-item-singer {
+        font-size: 11px;
+        color: #cbaeb4;
+        font-weight: 600;
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .music-item-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+    .music-item-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--theme-pink-light);
+        color: var(--theme-pink-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .music-item-btn:active {
+        transform: scale(0.9);
+        background: #ffe6ea;
+    }
+    .music-item-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+    }
+    .music-file-upload-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .music-file-btn {
+        flex: 1;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px dashed var(--theme-pink);
+        border-radius: 12px;
+        font-size: 12px;
+        color: var(--theme-pink-dark);
+        text-align: center;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .music-file-btn.has-file {
+        background: var(--theme-pink-light);
+        border-style: solid;
+    }
