@@ -907,6 +907,68 @@
             <button class="settings-btn" id="btn-del-music" style="color: #ff6b81; margin-top: 10px; display: none;">删除歌曲</button>
         </div>
     </div>
+    <!-- 新增：全屏音乐播放页面 -->
+    <div class="theme-page" id="full-music-page" style="z-index: 400; background: linear-gradient(135deg, #fff0f5 0%, #ffe6ea 100%);">
+        <div class="theme-header" style="background: transparent; box-shadow: none; border-bottom: none;">
+            <span class="theme-back" id="full-music-back"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:currentColor;"><use href="#ic-back"/></svg></span>
+            <span style="width:24px;"></span>
+        </div>
+        <div class="full-music-content">
+            <!-- 顶部头像与耳机线 -->
+            <div class="fm-avatars-container">
+                <div class="fm-avatar-wrapper" id="fm-btn-select-role">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff9eaa'%3E%3Cpath d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E" class="fm-avatar default-add" id="fm-role-avatar">
+                    <div class="fm-wire fm-wire-left"></div>
+                </div>
+                <div class="fm-avatar-wrapper">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="fm-avatar" id="fm-user-avatar" data-img-key="user-avatar">
+                    <div class="fm-wire fm-wire-right"></div>
+                </div>
+            </div>
+            
+            <!-- 中间大封面 -->
+            <div class="fm-cover-container">
+                <img src="https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=600&q=80" class="fm-cover" id="fm-large-cover">
+            </div>
+            
+            <!-- 下方信息与控制 -->
+            <div class="fm-info-controls">
+                <div class="fm-title" id="fm-title">未知歌曲</div>
+                <div class="fm-singer" id="fm-singer">未知歌手</div>
+                
+                <input type="text" class="fm-input" placeholder="写下你想在听歌时说的话...">
+                
+                <div class="fm-progress-wrapper">
+                    <span class="fm-time" id="fm-time-current">00:00</span>
+                    <div class="fm-progress-container" id="fm-progress-container">
+                        <div class="fm-progress-bg">
+                            <div class="fm-progress-fill" id="fm-progress-fill">
+                                <div class="fm-progress-thumb"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="fm-time" id="fm-time-total">00:00</span>
+                </div>
+                
+                <div class="fm-controls">
+                    <svg viewBox="0 0 24 24" id="fm-btn-prev" style="transform: scale(-1, 1);"><use href="#ic-skip"/></svg>
+                    <div class="fm-play-btn" id="fm-btn-play"><svg viewBox="0 0 24 24" id="fm-icon-play"><use href="#ic-play"/></svg></div>
+                    <svg viewBox="0 0 24 24" id="fm-btn-next"><use href="#ic-skip"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增：选择一起听歌的角色弹窗 -->
+    <div class="modal-overlay" id="fm-role-modal" style="z-index: 2500;">
+        <div class="modal-content">
+            <div class="modal-header">选择一起听歌的伙伴</div>
+            <div class="cp-device-list" id="fm-role-list" style="max-height: 50vh; overflow-y: auto; margin-top: 12px;">
+                <!-- 动态渲染角色列表 -->
+            </div>
+            <button class="settings-btn" id="btn-close-fm-role" style="margin-top: 14px; width: 100%;">取消</button>
+        </div>
+    </div>
 <div class="context-menu" id="context-menu">
     <button class="menu-btn" id="menu-url-btn">输入URL</button>
     <button class="menu-btn" id="menu-local-btn">本地文件</button>
@@ -1302,4 +1364,4 @@
 </div>
 <script src="script.js"></script>
 </body>
-    </html>
+</html>
