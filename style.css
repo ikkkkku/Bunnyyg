@@ -1966,3 +1966,64 @@ padding: 0;
         background: var(--theme-pink-light);
         border-style: solid;
     }
+    /* --- 新增：全屏音乐播放页专属样式 --- */
+    .full-music-content {
+        flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 24px 60px 24px; gap: 30px;
+    }
+    .fm-avatars-container {
+        display: flex; justify-content: space-between; width: 100%; padding: 0 20px; position: relative; margin-top: 10px;
+    }
+    .fm-avatar-wrapper {
+        position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;
+    }
+    .fm-avatar {
+        width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 16px rgba(255,182,193,0.5); cursor: pointer; background: #fff; transition: all 0.3s;
+    }
+    .fm-avatar.default-add {
+        padding: 14px; border: 2px dashed var(--theme-pink); box-shadow: none;
+    }
+    .fm-wire {
+        position: absolute; top: 32px; width: 130px; height: 2px; z-index: 1; pointer-events: none;
+    }
+    .fm-wire-left {
+        left: 64px; background: linear-gradient(to right, rgba(255,182,193,0.8), transparent);
+    }
+    .fm-wire-right {
+        right: 64px; background: linear-gradient(to left, rgba(255,182,193,0.8), transparent);
+    }
+    .fm-cover-container {
+        width: 280px; height: 280px; border-radius: 50%; border: 8px solid rgba(255,255,255,0.6); box-shadow: 0 12px 40px rgba(255,182,193,0.4); overflow: hidden; display: flex; justify-content: center; align-items: center; background: #fff; margin-top: 10px;
+    }
+    .fm-cover {
+        width: 100%; height: 100%; object-fit: cover; border-radius: 50%; animation: spin 24s linear infinite; animation-play-state: paused;
+    }
+    .fm-cover.playing { animation-play-state: running; }
+    .fm-info-controls {
+        width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: auto;
+    }
+    .fm-title { font-size: 24px; font-weight: 800; color: var(--theme-text-dark); text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fm-singer { font-size: 14px; color: #cbaeb4; font-weight: 600; text-align: center; margin-top: -10px; }
+    .fm-input {
+        width: 100%; padding: 14px 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.9); background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); outline: none; font-size: 13px; color: var(--theme-text-dark); text-align: center; box-shadow: inset 0 2px 8px rgba(255,182,193,0.15); font-weight: 600; margin: 10px 0;
+    }
+    .fm-input::placeholder { color: #d8c2c6; }
+    .fm-progress-wrapper {
+        display: flex; align-items: center; width: 100%; gap: 12px;
+    }
+    .fm-time { font-size: 11px; color: #cbaeb4; font-weight: 700; width: 38px; text-align: center; font-variant-numeric: tabular-nums; }
+    .fm-progress-container {
+        flex: 1; height: 24px; display: flex; align-items: center; cursor: pointer; position: relative; -webkit-tap-highlight-color: transparent;
+    }
+    .fm-progress-bg { width: 100%; height: 4px; background: rgba(255, 182, 193, 0.4); border-radius: 2px; position: relative; }
+    .fm-progress-fill { height: 100%; width: 0%; background: var(--theme-pink-dark); border-radius: 2px; position: absolute; top: 0; left: 0; pointer-events: none; }
+    .fm-progress-thumb { position: absolute; top: 50%; right: 0; transform: translate(50%, -50%); width: 14px; height: 14px; background: #fff; border: 3px solid var(--theme-pink-dark); border-radius: 50%; box-shadow: 0 2px 8px rgba(255, 182, 193, 0.6); pointer-events: none; }
+    .fm-controls {
+        display: flex; align-items: center; gap: 36px; color: var(--theme-pink-dark); margin-top: 10px;
+    }
+    .fm-controls svg { width: 32px; height: 32px; fill: currentColor; cursor: pointer; transition: transform 0.2s; }
+    .fm-controls svg:active { transform: scale(0.85); }
+    .fm-play-btn {
+        width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, var(--theme-pink) 0%, #ff9eaa 100%); display: flex; justify-content: center; align-items: center; color: #fff; box-shadow: 0 8px 24px rgba(255, 158, 170, 0.4); cursor: pointer; transition: transform 0.2s;
+    }
+    .fm-play-btn:active { transform: scale(0.9); }
+    .fm-play-btn svg { width: 36px; height: 36px; }
