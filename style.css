@@ -1727,4 +1727,91 @@ padding: 0;
     }
     .chat-group-nav.manage-mode .group-del-btn {
         display: inline-block;
-        }
+    }
+    /* --- 新增：音乐页面专属样式 --- */
+    .music-dock-bar {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 32px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px 0 10px;
+        box-shadow: 0 8px 24px rgba(255, 182, 193, 0.3);
+        border: 1px solid rgba(255,255,255,0.9);
+        z-index: 100;
+        justify-content: space-between;
+    }
+    .music-dock-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        overflow: hidden;
+    }
+    .music-dock-cover {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        animation: spin 10s linear infinite;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 8px rgba(255,182,193,0.4);
+        flex-shrink: 0;
+    }
+    .music-dock-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    .music-dock-title {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--theme-text-dark);
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    .music-dock-singer {
+        font-size: 10px;
+        color: #cbaeb4;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    .music-dock-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--theme-pink-dark);
+        flex-shrink: 0;
+    }
+    .music-dock-controls svg {
+        width: 22px;
+        height: 22px;
+        fill: currentColor;
+        cursor: pointer;
+    }
+    .music-dock-controls .play-btn svg {
+        width: 28px;
+        height: 28px;
+    }
+    .music-dock-menu {
+        margin-left: 12px;
+        color: #cbaeb4;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .music-dock-menu svg {
+        width: 22px;
+        height: 22px;
+        fill: currentColor;
+        cursor: pointer;
+                      }
