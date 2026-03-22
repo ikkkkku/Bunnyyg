@@ -3086,7 +3086,7 @@ ${dynamicExample}
         reader.readAsDataURL(file);
         psFrameFile.value = '';
     });
-document.getElementById('personal-style-back').addEventListener('click', async () => {
+    document.getElementById('personal-style-back').addEventListener('click', async () => {
         if (currentActiveChat) {
             const styleObj = getPersonalStyleObj();
             currentActiveChat.personalStyle = styleObj;
@@ -3095,15 +3095,21 @@ document.getElementById('personal-style-back').addEventListener('click', async (
         }
         document.getElementById('personal-style-page').classList.remove('active');
     });
-    document.getElementById('btn-ps-clear').addEventListener('click', async () => {
-        if (currentActiveChat) {
-            currentActiveChat.personalStyle = null;
-            await bunnyDB.characters.put(currentActiveChat);
-            applyPersonalChatStyle(null);
-            document.getElementById('personal-style-page').classList.remove('active');
-            alert('已清除专属装扮，恢复全局样式！');
-        }
-    });
+    
+    // 新增：加入判空保护，防止因元素缺失导致整个JS脚本崩溃卡死页面
+    const btnPsClear = document.getElementById('btn-ps-clear');
+    if (btnPsClear) {
+        btnPsClear.addEventListener('click', async () => {
+            if (currentActiveChat) {
+                currentActiveChat.personalStyle = null;
+                await bunnyDB.characters.put(currentActiveChat);
+                applyPersonalChatStyle(null);
+                document.getElementById('personal-style-page').classList.remove('active');
+                alert('已清除专属装扮，恢复全局样式！');
+            }
+        });
+    }
+
     csAutoSummaryToggle.addEventListener('change', (e) => {
         csSummaryThresholdContainer.style.display = e.target.checked ? 'flex' : 'none';
     });
