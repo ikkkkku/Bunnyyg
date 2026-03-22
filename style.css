@@ -1539,3 +1539,76 @@ padding: 0;
     margin-bottom: 12px;
 }
 .vp-chat-container { display: flex; flex-direction: column; gap: 16px; }
+    /* --- 新增：表情包库专属样式 --- */
+    .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding-bottom: 20px;
+    }
+    .emoji-item {
+        position: relative;
+        aspect-ratio: 1;
+        background: var(--theme-card-bg);
+        border: 1px solid var(--theme-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(255, 182, 193, 0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .emoji-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .emoji-desc {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        font-size: 11px;
+        color: var(--theme-text-dark);
+        text-align: center;
+        padding: 4px 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 600;
+    }
+    .emoji-del-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        background: rgba(255, 107, 129, 0.9);
+        color: #fff;
+        border-radius: 50%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .emoji-grid.manage-mode .emoji-del-btn {
+        display: flex;
+    }
+    .group-del-btn {
+        margin-left: 4px;
+        color: #ff6b81;
+        font-size: 14px;
+        display: none;
+        cursor: pointer;
+    }
+    .chat-group-nav.manage-mode .group-del-btn {
+        display: inline-block;
+}
