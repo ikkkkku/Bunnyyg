@@ -518,7 +518,7 @@
         <div class="chat-detail-bottom" id="chat-detail-bottom">
                         <div class="cd-btn" id="btn-chat-plus"><svg viewBox="0 0 24 24"><use href="#ic-bold-add"/></svg></div>
             <textarea class="cd-input" id="cd-msg-input" placeholder="发送消息..." rows="1"></textarea>
-            <div class="cd-btn"><svg viewBox="0 0 24 24"><use href="#ic-bold-emoji"/></svg></div>
+                        <div class="cd-btn" id="btn-chat-emoji"><svg viewBox="0 0 24 24"><use href="#ic-bold-emoji"/></svg></div>
             <div class="cd-btn cd-btn-send" id="btn-send-msg"><svg viewBox="0 0 24 24"><use href="#ic-bold-send"/></svg></div>
         </div>
         <!-- 展开菜单面板 -->
@@ -531,6 +531,11 @@
             <div class="cpm-item"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-phone"/></svg></div><span class="cpm-name">电话</span></div>
             <div class="cpm-item"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-video"/></svg></div><span class="cpm-name">视频</span></div>
             <div class="cpm-item"><div class="cpm-icon"><svg viewBox="0 0 24 24"><use href="#ic-fill-card"/></svg></div><span class="cpm-name">亲属卡</span></div>
+        </div>
+        <!-- 新增：聊天表情包面板 -->
+        <div class="chat-emoji-panel" id="chat-emoji-panel">
+            <div class="chat-emoji-nav" id="chat-emoji-nav"></div>
+            <div class="chat-emoji-content" id="chat-emoji-content"></div>
         </div>
         <!-- 多选操作栏 -->
         <div class="multi-select-bottom" id="multi-select-bottom" style="flex-direction: column; gap: 12px; align-items: center;">
@@ -1219,4 +1224,4 @@
 </div>
 <script src="script.js"></script>
 </body>
-                                                                        </html>
+                    </html>
