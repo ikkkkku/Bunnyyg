@@ -5165,4 +5165,4 @@ chatRealImageInput.addEventListener('change', (e) => {
         } catch (err) {
             console.error('获取音乐列表失败', err);
         }
-        }
+                               }
