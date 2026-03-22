@@ -831,7 +831,11 @@ padding: 0;
         z-index: 10; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         max-height: 100px;
     }
+    .quote-bar.active {
+        display: flex;
+    }
     .quote-text { flex: 1; white-space: pre-wrap; overflow-y: auto; margin-right: 10px; opacity: 0.8; word-break: break-all; max-height: 80px;}
+
     .quote-text::-webkit-scrollbar { display: none; }
 
     .quote-close { font-size: 16px; cursor: pointer; color: var(--theme-pink-dark); font-weight: bold;}
