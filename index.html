@@ -639,8 +639,24 @@
         <div class="theme-content">
             <div class="chat-preview-box">
                 <div class="vp-chat-container" id="global-vp-container">
-                    <div class="vp-chat-row ai"><div class="vp-avatar" style="background:#ffb6c1;"></div><div class="vp-bubble ai-bubble">你觉得这个新样式怎么样？</div></div>
-                    <div class="vp-chat-row user"><div class="vp-avatar" style="background:#cbaeb4;"></div><div class="vp-bubble user-bubble">看起来非常清爽，字号也合适！</div></div>
+                    <div class="msg-row ai">
+                        <div class="msg-avatar-col">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="msg-avatar" style="background:#ffb6c1;">
+                            <div class="msg-time">10:00</div>
+                        </div>
+                        <div class="msg-bubble-col">
+                            <div class="msg-bubble ai-bubble">你觉得这个新样式怎么样？</div>
+                        </div>
+                    </div>
+                    <div class="msg-row user">
+                        <div class="msg-bubble-col">
+                            <div class="msg-bubble user-bubble">看起来非常清爽，字号也合适！</div>
+                        </div>
+                        <div class="msg-avatar-col">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="msg-avatar" style="background:#cbaeb4;">
+                            <div class="msg-time">10:01</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="vp-hint" style="text-align:center; margin-bottom:10px;">实时预览 (将覆盖所有未单独设置的角色)</div>
@@ -677,7 +693,7 @@
                         <input type="range" id="gs-frame-y" min="-50" max="50" step="1" value="0">
                     </div>
                 </div>
-                <textarea id="gs-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码"></textarea>
+                <textarea id="gs-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码 (建议加 !important)"></textarea>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="settings-btn" id="btn-gs-save-preset" style="flex: 1;">存为预设</button>
                     <button class="settings-btn" id="btn-gs-manage-preset" style="flex: 1;">管理预设</button>
@@ -695,10 +711,27 @@
         <div class="theme-content">
             <div class="chat-preview-box">
                 <div class="vp-chat-container" id="personal-vp-container">
-                    <div class="vp-chat-row ai"><div class="vp-avatar" id="ps-vp-ai-avatar"></div><div class="vp-bubble ai-bubble">这是为你单独定制的专属气泡哦！</div></div>
-                    <div class="vp-chat-row user"><div class="vp-avatar" id="ps-vp-user-avatar"></div><div class="vp-bubble user-bubble">哇，真的和别人不一样呢~</div></div>
+                    <div class="msg-row ai">
+                        <div class="msg-avatar-col">
+                            <img src="" class="msg-avatar" id="ps-vp-ai-avatar">
+                            <div class="msg-time">10:00</div>
+                        </div>
+                        <div class="msg-bubble-col">
+                            <div class="msg-bubble ai-bubble">这是为你单独定制的专属气泡哦！</div>
+                        </div>
+                    </div>
+                    <div class="msg-row user">
+                        <div class="msg-bubble-col">
+                            <div class="msg-bubble user-bubble">哇，真的和别人不一样呢~</div>
+                        </div>
+                        <div class="msg-avatar-col">
+                            <img src="" class="msg-avatar" id="ps-vp-user-avatar">
+                            <div class="msg-time">10:01</div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div class="vp-hint" style="text-align:center; margin-bottom:10px;">实时预览 (仅对当前角色生效)</div>
             <div class="theme-section-title">样式设置</div>
             <div class="settings-group">
@@ -733,7 +766,8 @@
                         <input type="range" id="ps-frame-y" min="-50" max="50" step="1" value="0">
                     </div>
                 </div>
-                <textarea id="ps-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码"></textarea>
+                <textarea id="ps-css" class="settings-input textarea-custom" placeholder="高级：输入自定义CSS代码 (建议加 !important)"></textarea>
+
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="settings-btn" id="btn-ps-save-preset" style="flex: 1;">存为预设</button>
                     <button class="settings-btn" id="btn-ps-manage-preset" style="flex: 1;">管理预设</button>
