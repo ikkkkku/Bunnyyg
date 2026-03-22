@@ -1405,24 +1405,104 @@ ${historyStr || '暂无聊天记录'}
     const btnSendMsg = document.getElementById('btn-send-msg');
     const btnChatPlus = document.getElementById('btn-chat-plus');
     const chatPlusMenu = document.getElementById('chat-plus-menu');
+    const btnChatEmoji = document.getElementById('btn-chat-emoji');
+    const chatEmojiPanel = document.getElementById('chat-emoji-panel');
+    let currentChatEmojiGroup = 'default';
+
+    async function renderChatEmojiPanel() {
+        const data = await localforage.getItem('bunny_emoji_data') || { groups: [{ id: 'default', name: '默认' }], emojis: [] };
+        const nav = document.getElementById('chat-emoji-nav');
+        const content = document.getElementById('chat-emoji-content');
+        nav.innerHTML = '';
+        content.innerHTML = '';
+
+        if (!data.groups.find(g => g.id === currentChatEmojiGroup)) {
+            currentChatEmojiGroup = 'default';
+        }
+
+        data.groups.forEach(g => {
+            const item = document.createElement('div');
+            item.className = `chat-emoji-nav-item ${currentChatEmojiGroup === g.id ? 'active' : ''}`;
+            item.textContent = g.name;
+            item.onclick = (e) => {
+                e.stopPropagation();
+                currentChatEmojiGroup = g.id;
+                renderChatEmojiPanel();
+            };
+            nav.appendChild(item);
+        });
+
+        const filteredEmojis = data.emojis.filter(e => e.groupId === currentChatEmojiGroup);
+        if (filteredEmojis.length === 0) {
+            content.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#cbaeb4; font-size:12px; margin-top:20px;">暂无表情包，请前往“我的”->“表情包库”添加</div>';
+            return;
+        }
+
+        [...filteredEmojis].reverse().forEach(e => {
+            const item = document.createElement('div');
+            item.className = 'chat-emoji-item';
+            item.innerHTML = `<img src="${e.url}" alt="${e.desc}">`;
+            item.onclick = (ev) => {
+                ev.stopPropagation();
+                const msgText = JSON.stringify({ type: "Image", content: e.url });
+                chatEmojiPanel.classList.remove('active');
+                btnChatEmoji.classList.remove('active');
+                sendMessage(msgText);
+            };
+            content.appendChild(item);
+        });
+    }
+
     // 「+」号点击事件：切换菜单展开/收起状态及旋转动画
     btnChatPlus.addEventListener('click', (e) => {
         e.stopPropagation();
         chatPlusMenu.classList.toggle('active');
         btnChatPlus.classList.toggle('rotated');
+        if (chatEmojiPanel) {
+            chatEmojiPanel.classList.remove('active');
+            btnChatEmoji.classList.remove('active');
+        }
     });
-    // 点击其他区域自动收起面板并恢复+号
+
+    // 表情按钮点击事件
+    if (btnChatEmoji) {
+        btnChatEmoji.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const isActive = chatEmojiPanel.classList.contains('active');
+            if (!isActive) {
+                await renderChatEmojiPanel();
+            }
+            chatEmojiPanel.classList.toggle('active');
+            btnChatEmoji.classList.toggle('active');
+            if (chatPlusMenu) {
+                chatPlusMenu.classList.remove('active');
+                btnChatPlus.classList.remove('rotated');
+            }
+        });
+    }
+
+    // 点击其他区域自动收起面板并恢复状态
     document.addEventListener('click', (e) => {
         if (chatPlusMenu && !chatPlusMenu.contains(e.target) && !btnChatPlus.contains(e.target)) {
             chatPlusMenu.classList.remove('active');
             btnChatPlus.classList.remove('rotated');
         }
+        if (chatEmojiPanel && !chatEmojiPanel.contains(e.target) && !btnChatEmoji.contains(e.target)) {
+            chatEmojiPanel.classList.remove('active');
+            btnChatEmoji.classList.remove('active');
+        }
     });
-    // 输入框聚焦时自动收起面板并恢复+号
+
+    // 输入框聚焦时自动收起面板并恢复状态
     cdMsgInput.addEventListener('focus', () => {
         chatPlusMenu.classList.remove('active');
         btnChatPlus.classList.remove('rotated');
+        if (chatEmojiPanel) {
+            chatEmojiPanel.classList.remove('active');
+            btnChatEmoji.classList.remove('active');
+        }
     });
+
     // === 新增：气泡菜单与状态全局变量 ===
     let activeMsgId = null;
     let activeMsgRole = null;
@@ -1684,6 +1764,10 @@ document.getElementById('chat-detail-back').addEventListener('click', () => {
         currentActiveChat = null;
         chatPlusMenu.classList.remove('active');
         btnChatPlus.classList.remove('rotated');
+        const chatEmojiPanel = document.getElementById('chat-emoji-panel');
+        const btnChatEmoji = document.getElementById('btn-chat-emoji');
+        if(chatEmojiPanel) chatEmojiPanel.classList.remove('active');
+        if(btnChatEmoji) btnChatEmoji.classList.remove('active');
         // --- 新增：退出聊天时清除个人美化样式 ---
         applyPersonalChatStyle(null);
         renderChatList(); 
@@ -4079,11 +4163,15 @@ ${taskPrompt}
             cameraModal.classList.add('active');
             cameraCard.classList.remove('flipped');
             cameraDescInput.value = '';
-            // 自动收起聊天页的加号菜单
+            // 自动收起聊天页的加号菜单和表情面板
             const chatPlusMenu = document.getElementById('chat-plus-menu');
             const btnChatPlus = document.getElementById('btn-chat-plus');
             if(chatPlusMenu) chatPlusMenu.classList.remove('active');
             if(btnChatPlus) btnChatPlus.classList.remove('rotated');
+            const chatEmojiPanel = document.getElementById('chat-emoji-panel');
+            const btnChatEmoji = document.getElementById('btn-chat-emoji');
+            if(chatEmojiPanel) chatEmojiPanel.classList.remove('active');
+            if(btnChatEmoji) btnChatEmoji.classList.remove('active');
         });
     }
     if (cameraFront) {
@@ -4136,15 +4224,19 @@ ${taskPrompt}
     const chatRealImageInput = document.getElementById('chat-real-image-input');
     if (btnOpenImage && chatRealImageInput) {
         btnOpenImage.addEventListener('click', () => {
-            // 自动收起聊天页的加号菜单
+            // 自动收起聊天页的加号菜单和表情面板
             const chatPlusMenu = document.getElementById('chat-plus-menu');
             const btnChatPlus = document.getElementById('btn-chat-plus');
             if(chatPlusMenu) chatPlusMenu.classList.remove('active');
             if(btnChatPlus) btnChatPlus.classList.remove('rotated');
+            const chatEmojiPanel = document.getElementById('chat-emoji-panel');
+            const btnChatEmoji = document.getElementById('btn-chat-emoji');
+            if(chatEmojiPanel) chatEmojiPanel.classList.remove('active');
+            if(btnChatEmoji) btnChatEmoji.classList.remove('active');
             // 触发文件选择
             chatRealImageInput.click();
         });
-        chatRealImageInput.addEventListener('change', (e) => {
+chatRealImageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -4189,13 +4281,18 @@ ${taskPrompt}
         btnOpenVoice.addEventListener('click', () => {
             voiceModal.classList.add('active');
             voiceDescInput.value = '';
-            // 自动收起聊天页的加号菜单
+            // 自动收起聊天页的加号菜单和表情面板
             const chatPlusMenu = document.getElementById('chat-plus-menu');
             const btnChatPlus = document.getElementById('btn-chat-plus');
             if(chatPlusMenu) chatPlusMenu.classList.remove('active');
             if(btnChatPlus) btnChatPlus.classList.remove('rotated');
+            const chatEmojiPanel = document.getElementById('chat-emoji-panel');
+            const btnChatEmoji = document.getElementById('btn-chat-emoji');
+            if(chatEmojiPanel) chatEmojiPanel.classList.remove('active');
+            if(btnChatEmoji) btnChatEmoji.classList.remove('active');
         });
     }
+
     if (btnCloseVoice) {
         btnCloseVoice.addEventListener('click', () => {
             voiceModal.classList.remove('active');
@@ -4232,11 +4329,15 @@ ${taskPrompt}
             locationModal.classList.add('active');
             locationNameInput.value = '';
             locationDistanceInput.value = '';
-            // 自动收起聊天页的加号菜单
+            // 自动收起聊天页的加号菜单和表情面板
             const chatPlusMenu = document.getElementById('chat-plus-menu');
             const btnChatPlus = document.getElementById('btn-chat-plus');
             if(chatPlusMenu) chatPlusMenu.classList.remove('active');
             if(btnChatPlus) btnChatPlus.classList.remove('rotated');
+            const chatEmojiPanel = document.getElementById('chat-emoji-panel');
+            const btnChatEmoji = document.getElementById('btn-chat-emoji');
+            if(chatEmojiPanel) chatEmojiPanel.classList.remove('active');
+            if(btnChatEmoji) btnChatEmoji.classList.remove('active');
         });
     }
     if (btnCloseLocation) {
