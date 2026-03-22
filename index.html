@@ -848,6 +848,12 @@
         <div class="theme-content" style="padding-bottom: 100px;" id="music-list-content">
             <!-- 歌曲列表将渲染在这里 -->
         </div>
+        <!-- 悬浮歌词面板 -->
+        <div class="lrc-overlay" id="lrc-overlay">
+            <div class="lrc-container" id="lrc-container">
+                <div class="lrc-line">暂无歌词</div>
+            </div>
+        </div>
         <!-- 底部音乐播放栏 -->
         <div class="music-dock-bar">
             <div class="music-progress-container" id="music-progress-container">
@@ -858,7 +864,16 @@
                 </div>
             </div>
             <div class="music-dock-left">
-                <img src="https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80" class="music-dock-cover" id="dock-music-cover" alt="cover">
+                <div class="music-cover-container" id="dock-cover-container">
+                    <div class="music-cover-flipper" id="dock-cover-flipper">
+                        <div class="music-cover-front">
+                            <img src="https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80" class="music-dock-cover" id="dock-music-cover" alt="cover">
+                        </div>
+                        <div class="music-cover-back">
+                            <svg viewBox="0 0 24 24"><use href="#ic-music-note"/></svg>
+                        </div>
+                    </div>
+                </div>
                 <div class="music-dock-info">
                     <div class="music-dock-title" id="dock-music-title">未知歌曲</div>
                     <div class="music-dock-singer" id="dock-music-singer">未知歌手</div>
