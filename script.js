@@ -4885,297 +4885,388 @@ chatRealImageInput.addEventListener('change', (e) => {
         playMusicById(globalMusicList[index].id);
     }
     document.getElementById('btn-dock-next').addEventListener('click', playNextMusic);
-    // --- 新增：音乐页面逻辑 ---
-    const musicPage = document.getElementById('music-page');
-    const musicListContent = document.getElementById('music-list-content');
-    const btnAddMusic = document.getElementById('btn-add-music');
-    const musicEditModal = document.getElementById('music-edit-modal');
-    const btnCloseMusicModal = document.getElementById('btn-close-music-modal');
-    const btnSaveMusic = document.getElementById('btn-save-music');
-    const btnDelMusic = document.getElementById('btn-del-music');
+    // ==========================================
+// --- 音乐应用完整逻辑模块 (防崩溃安全版) ---
+// ==========================================
+window.addEventListener('DOMContentLoaded', () => {
+    try {
+        const musicPage = document.getElementById('music-page');
+        if (!musicPage) return; // 如果HTML没加，安全退出，绝不影响查手机等功能
+        
+        const musicListContent = document.getElementById('music-list-content');
+        const btnAddMusic = document.getElementById('btn-add-music');
+        const musicEditModal = document.getElementById('music-edit-modal');
+        const btnCloseMusicModal = document.getElementById('btn-close-music-modal');
+        const btnSaveMusic = document.getElementById('btn-save-music');
+        const btnDelMusic = document.getElementById('btn-del-music');
 
-    const musicTitleInput = document.getElementById('music-title-input');
-    const musicSingerInput = document.getElementById('music-singer-input');
-    const musicUrlInput = document.getElementById('music-url-input');
-    const musicEditId = document.getElementById('music-edit-id');
-    const musicModalTitle = document.getElementById('music-modal-title');
+        const musicTitleInput = document.getElementById('music-title-input');
+        const musicSingerInput = document.getElementById('music-singer-input');
+        const musicUrlInput = document.getElementById('music-url-input');
+        const musicEditId = document.getElementById('music-edit-id');
+        const musicModalTitle = document.getElementById('music-modal-title');
 
-    // 文件上传相关
-    const musicCoverTrigger = document.getElementById('music-cover-trigger');
-    const musicCoverInput = document.getElementById('music-cover-input');
-    const btnUploadAudio = document.getElementById('btn-upload-audio');
-    const musicAudioInput = document.getElementById('music-audio-input');
-    const btnUploadLrc = document.getElementById('btn-upload-lrc');
-    const musicLrcInput = document.getElementById('music-lrc-input');
+        const musicCoverTrigger = document.getElementById('music-cover-trigger');
+        const musicCoverInput = document.getElementById('music-cover-input');
+        const btnUploadAudio = document.getElementById('btn-upload-audio');
+        const musicAudioInput = document.getElementById('music-audio-input');
+        const btnUploadLrc = document.getElementById('btn-upload-lrc');
+        const musicLrcInput = document.getElementById('music-lrc-input');
 
-    let currentMusicCoverBase64 = '';
-    let currentMusicAudioData = ''; 
-    let currentMusicLrcData = '';
+        let currentMusicCoverBase64 = '';
+        let currentMusicAudioData = ''; 
+        let currentMusicLrcData = '';
 
-    document.querySelectorAll('.app-item').forEach(item => {
-        const nameEl = item.querySelector('.app-name');
-        if (nameEl && nameEl.textContent === '音乐') {
-            item.addEventListener('click', () => {
-                musicPage.classList.add('active');
-                renderMusicList();
-            });
-        }
-    });
-
-    const musicBackBtn = document.getElementById('music-back');
-    if (musicBackBtn) {
-        musicBackBtn.addEventListener('click', () => {
-            musicPage.classList.remove('active');
+        // 1. 绑定桌面图标点击
+        document.querySelectorAll('.app-item').forEach(item => {
+            const nameEl = item.querySelector('.app-name');
+            if (nameEl && nameEl.textContent === '音乐') {
+                item.addEventListener('click', () => {
+                    musicPage.classList.add('active');
+                    renderMusicList();
+                });
+            }
         });
-    }
 
-    // 触发封面上传
-    musicCoverTrigger.addEventListener('click', () => musicCoverInput.click());
-    musicCoverInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            currentMusicCoverBase64 = event.target.result;
-            musicCoverTrigger.style.backgroundImage = `url('${currentMusicCoverBase64}')`;
-            musicCoverTrigger.classList.add('has-img');
-        };
-        reader.readAsDataURL(file);
-        musicCoverInput.value = '';
-    });
-
-    // 触发音源上传
-    btnUploadAudio.addEventListener('click', () => musicAudioInput.click());
-    musicAudioInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            currentMusicAudioData = event.target.result;
-            btnUploadAudio.textContent = '已上传音源';
-            btnUploadAudio.classList.add('has-file');
-            musicUrlInput.value = ''; // 如果上传了文件，清空URL
-        };
-        reader.readAsDataURL(file);
-        musicAudioInput.value = '';
-    });
-
-    // 触发歌词上传
-    btnUploadLrc.addEventListener('click', () => musicLrcInput.click());
-    musicLrcInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            currentMusicLrcData = event.target.result;
-            btnUploadLrc.textContent = '已上传歌词';
-            btnUploadLrc.classList.add('has-file');
-        };
-        reader.readAsText(file);
-        musicLrcInput.value = '';
-    });
-
-    // 打开添加弹窗
-    btnAddMusic.addEventListener('click', () => {
-        musicModalTitle.textContent = '添加音乐';
-        musicEditId.value = '';
-        musicTitleInput.value = '';
-        musicSingerInput.value = '';
-        musicUrlInput.value = '';
-        
-        currentMusicCoverBase64 = '';
-        musicCoverTrigger.style.backgroundImage = '';
-        musicCoverTrigger.classList.remove('has-img');
-        
-        currentMusicAudioData = '';
-        btnUploadAudio.textContent = '上传本地音源';
-        btnUploadAudio.classList.remove('has-file');
-        
-        currentMusicLrcData = '';
-        btnUploadLrc.textContent = '上传滚动歌词 (.lrc)';
-        btnUploadLrc.classList.remove('has-file');
-
-        btnDelMusic.style.display = 'none';
-        musicEditModal.classList.add('active');
-    });
-
-    btnCloseMusicModal.addEventListener('click', () => {
-        musicEditModal.classList.remove('active');
-    });
-
-    // 保存音乐
-    btnSaveMusic.addEventListener('click', async () => {
-        const title = musicTitleInput.value.trim();
-        const singer = musicSingerInput.value.trim();
-        const url = musicUrlInput.value.trim();
-        
-        if (!title) {
-            alert('请输入歌曲名');
-            return;
+        // 2. 绑定返回按钮
+        const musicBackBtn = document.getElementById('music-back');
+        if (musicBackBtn) {
+            musicBackBtn.addEventListener('click', () => {
+                musicPage.classList.remove('active');
+            });
         }
 
-        const finalAudioData = currentMusicAudioData || url;
-        if (!finalAudioData) {
-            alert('请提供音源URL或上传本地音源');
-            return;
-        }
+        // --- 全局音频控制 ---
+        const globalAudio = new Audio();
+        let currentPlayingMusicId = null;
+        let globalMusicList = [];
 
-        const musicData = {
-            title: title,
-            singer: singer || '未知歌手',
-            cover: currentMusicCoverBase64,
-            audio: finalAudioData,
-            lrc: currentMusicLrcData,
-            updatedAt: Date.now()
-        };
+        const playIcon = document.getElementById('icon-dock-play');
+        const dockCover = document.getElementById('dock-music-cover');
+        const progressFill = document.getElementById('music-progress-fill');
 
-        try {
-            const id = musicEditId.value;
-            if (id) {
-                await bunnyDB.music.update(parseInt(id), musicData);
-            } else {
-                await bunnyDB.music.add(musicData);
+        globalAudio.addEventListener('play', () => {
+            if(playIcon) playIcon.innerHTML = '<use href="#ic-pause"/>';
+            if(dockCover) dockCover.classList.add('playing');
+        });
+        globalAudio.addEventListener('pause', () => {
+            if(playIcon) playIcon.innerHTML = '<use href="#ic-play"/>';
+            if(dockCover) dockCover.classList.remove('playing');
+        });
+        globalAudio.addEventListener('timeupdate', () => {
+            if (globalAudio.duration && progressFill) {
+                const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
+                progressFill.style.width = percent + '%';
             }
-            musicEditModal.classList.remove('active');
-            renderMusicList();
-        } catch (err) {
-            console.error('保存音乐失败', err);
-            alert('保存失败');
+        });
+        globalAudio.addEventListener('ended', playNextMusic);
+
+        const progressContainer = document.getElementById('music-progress-container');
+        if (progressContainer) {
+            progressContainer.addEventListener('click', (e) => {
+                if (!globalAudio.duration) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percent = clickX / rect.width;
+                globalAudio.currentTime = percent * globalAudio.duration;
+            });
         }
-    });
 
-    // 删除音乐
-    btnDelMusic.addEventListener('click', async () => {
-        const id = musicEditId.value;
-        if (!id) return;
-        if (confirm('确定要删除这首歌曲吗？')) {
-            try {
-                await bunnyDB.music.delete(parseInt(id));
-                musicEditModal.classList.remove('active');
-                renderMusicList();
-            } catch (err) {
-                console.error('删除音乐失败', err);
-            }
+        const btnDockPlay = document.getElementById('btn-dock-play');
+        if (btnDockPlay) {
+            btnDockPlay.addEventListener('click', () => {
+                if (!globalAudio.src) return;
+                if (globalAudio.paused) globalAudio.play();
+                else globalAudio.pause();
+            });
         }
-    });
 
-    // 渲染歌曲列表
-    async function renderMusicList() {
-        musicListContent.innerHTML = '';
-        try {
-            const musics = await bunnyDB.music.toArray();
-            if (musics.length === 0) {
-                musicListContent.innerHTML = '<div style="text-align:center; color:#cbaeb4; font-size: 13px; font-weight:600; margin-top:40px;">暂无本地音乐，点击右上角添加</div>';
-                return;
-            }
-            
-            musics.sort((a, b) => b.updatedAt - a.updatedAt);
-            
-            const listContainer = document.createElement('div');
-            listContainer.className = 'music-list-container';
-
-            musics.forEach(music => {
+        async function playMusicById(id) {
+            const music = await bunnyDB.music.get(parseInt(id));
+            if (music) {
+                if (currentPlayingMusicId === music.id) {
+                    if (globalAudio.paused) globalAudio.play();
+                    else globalAudio.pause();
+                    return;
+                }
+                currentPlayingMusicId = music.id;
+                globalAudio.src = music.audio;
+                globalAudio.play();
+                
                 const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
-                const item = document.createElement('div');
-                item.className = 'music-list-item';
-                item.innerHTML = `
-                    <div class="music-item-left">
-                        <img src="${coverSrc}" class="music-item-cover">
-                        <div class="music-item-info">
-                            <div class="music-item-title">${music.title}</div>
-                            <div class="music-item-singer">${music.singer}</div>
-                        </div>
-                    </div>
-                    <div class="music-item-right">
-                        <div class="music-item-btn btn-play-music" data-id="${music.id}">
-                            <svg viewBox="0 0 24 24"><use href="#ic-music-note"/></svg>
-                        </div>
-                        <div class="music-item-btn btn-share-music" data-id="${music.id}">
-                            <svg viewBox="0 0 24 24"><use href="#ic-share"/></svg>
-                        </div>
-                        <div class="music-item-btn btn-edit-music" data-id="${music.id}">
-                            <svg viewBox="0 0 24 24"><use href="#ic-settings"/></svg>
-                        </div>
-                    </div>
-
-                `;
-                listContainer.appendChild(item);
-            });
-            
-            musicListContent.appendChild(listContainer);
-
-            // 保存当前列表供上下首切换使用
-            globalMusicList = musics;
-
-            // 绑定播放按钮事件 (真正播放音乐)
-            document.querySelectorAll('.btn-play-music').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.getAttribute('data-id');
-                    playMusicById(id);
-                });
-            });
-            // 绑定分享按钮事件 (为后期分享给角色做准备)
-            document.querySelectorAll('.btn-share-music').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.currentTarget.getAttribute('data-id');
-                    const music = await bunnyDB.music.get(parseInt(id));
-                    if (music) {
-                        // TODO: 后期在这里对接发送给角色的逻辑
-                        alert(`即将把歌曲《${music.title}》分享给聊天角色...\n(分享功能模块已预留)`);
-                    }
-                });
-            });
-
-            // 绑定编辑按钮事件
-            document.querySelectorAll('.btn-edit-music').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.currentTarget.getAttribute('data-id');
-                    const music = await bunnyDB.music.get(parseInt(id));
-                    if (music) {
-                        musicModalTitle.textContent = '编辑音乐';
-                        musicEditId.value = music.id;
-                        musicTitleInput.value = music.title;
-                        musicSingerInput.value = music.singer;
-                        
-                        // 还原图片
-                        currentMusicCoverBase64 = music.cover || '';
-                        if (currentMusicCoverBase64) {
-                            musicCoverTrigger.style.backgroundImage = `url('${currentMusicCoverBase64}')`;
-                            musicCoverTrigger.classList.add('has-img');
-                        } else {
-                            musicCoverTrigger.style.backgroundImage = '';
-                            musicCoverTrigger.classList.remove('has-img');
-                        }
-
-                        // 还原音源
-                        currentMusicAudioData = music.audio || '';
-                        if (currentMusicAudioData.startsWith('data:')) {
-                            btnUploadAudio.textContent = '已上传音源';
-                            btnUploadAudio.classList.add('has-file');
-                            musicUrlInput.value = '';
-                        } else {
-                            btnUploadAudio.textContent = '上传本地音源';
-                            btnUploadAudio.classList.remove('has-file');
-                            musicUrlInput.value = currentMusicAudioData;
-                        }
-
-                        // 还原歌词
-                        currentMusicLrcData = music.lrc || '';
-                        if (currentMusicLrcData) {
-                            btnUploadLrc.textContent = '已上传歌词';
-                            btnUploadLrc.classList.add('has-file');
-                        } else {
-                            btnUploadLrc.textContent = '上传滚动歌词 (.lrc)';
-                            btnUploadLrc.classList.remove('has-file');
-                        }
-
-                        btnDelMusic.style.display = 'block';
-                        musicEditModal.classList.add('active');
-                    }
-                });
-            });
-
-        } catch (err) {
-            console.error('获取音乐列表失败', err);
+                if(dockCover) dockCover.src = coverSrc;
+                const titleEl = document.getElementById('dock-music-title');
+                const singerEl = document.getElementById('dock-music-singer');
+                if(titleEl) titleEl.textContent = music.title;
+                if(singerEl) singerEl.textContent = music.singer;
+            }
         }
-                                    }
+
+        document.getElementById('btn-dock-prev')?.addEventListener('click', () => {
+            if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
+            let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
+            index = (index - 1 + globalMusicList.length) % globalMusicList.length;
+            playMusicById(globalMusicList[index].id);
+        });
+
+        function playNextMusic() {
+            if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
+            let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
+            index = (index + 1) % globalMusicList.length;
+            playMusicById(globalMusicList[index].id);
+        }
+        document.getElementById('btn-dock-next')?.addEventListener('click', playNextMusic);
+
+        // --- 弹窗与文件上传逻辑 ---
+        if(musicCoverTrigger) {
+            musicCoverTrigger.addEventListener('click', () => musicCoverInput?.click());
+        }
+        if(musicCoverInput) {
+            musicCoverInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentMusicCoverBase64 = event.target.result;
+                    musicCoverTrigger.style.backgroundImage = `url('${currentMusicCoverBase64}')`;
+                    musicCoverTrigger.classList.add('has-img');
+                };
+                reader.readAsDataURL(file);
+                musicCoverInput.value = '';
+            });
+        }
+
+        if(btnUploadAudio) {
+            btnUploadAudio.addEventListener('click', () => musicAudioInput?.click());
+        }
+        if(musicAudioInput) {
+            musicAudioInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentMusicAudioData = event.target.result;
+                    btnUploadAudio.textContent = '已上传音源';
+                    btnUploadAudio.classList.add('has-file');
+                    if(musicUrlInput) musicUrlInput.value = ''; 
+                };
+                reader.readAsDataURL(file);
+                musicAudioInput.value = '';
+            });
+        }
+
+        if(btnUploadLrc) {
+            btnUploadLrc.addEventListener('click', () => musicLrcInput?.click());
+        }
+        if(musicLrcInput) {
+            musicLrcInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentMusicLrcData = event.target.result;
+                    btnUploadLrc.textContent = '已上传歌词';
+                    btnUploadLrc.classList.add('has-file');
+                };
+                reader.readAsText(file);
+                musicLrcInput.value = '';
+            });
+        }
+
+        if(btnAddMusic) {
+            btnAddMusic.addEventListener('click', () => {
+                musicModalTitle.textContent = '添加音乐';
+                musicEditId.value = '';
+                musicTitleInput.value = '';
+                musicSingerInput.value = '';
+                musicUrlInput.value = '';
+                
+                currentMusicCoverBase64 = '';
+                musicCoverTrigger.style.backgroundImage = '';
+                musicCoverTrigger.classList.remove('has-img');
+                
+                currentMusicAudioData = '';
+                btnUploadAudio.textContent = '上传本地音源';
+                btnUploadAudio.classList.remove('has-file');
+                
+                currentMusicLrcData = '';
+                btnUploadLrc.textContent = '上传滚动歌词 (.lrc)';
+                btnUploadLrc.classList.remove('has-file');
+
+                btnDelMusic.style.display = 'none';
+                musicEditModal.classList.add('active');
+            });
+        }
+
+        if(btnCloseMusicModal) {
+            btnCloseMusicModal.addEventListener('click', () => {
+                musicEditModal.classList.remove('active');
+            });
+        }
+
+        if(btnSaveMusic) {
+            btnSaveMusic.addEventListener('click', async () => {
+                const title = musicTitleInput.value.trim();
+                const singer = musicSingerInput.value.trim();
+                const url = musicUrlInput.value.trim();
+                
+                if (!title) return alert('请输入歌曲名');
+
+                const finalAudioData = currentMusicAudioData || url;
+                if (!finalAudioData) return alert('请提供音源URL或上传本地音源');
+
+                const musicData = {
+                    title: title,
+                    singer: singer || '未知歌手',
+                    cover: currentMusicCoverBase64,
+                    audio: finalAudioData,
+                    lrc: currentMusicLrcData,
+                    updatedAt: Date.now()
+                };
+
+                try {
+                    const id = musicEditId.value;
+                    if (id) {
+                        await bunnyDB.music.update(parseInt(id), musicData);
+                    } else {
+                        await bunnyDB.music.add(musicData);
+                    }
+                    musicEditModal.classList.remove('active');
+                    renderMusicList();
+                } catch (err) {
+                    console.error('保存音乐失败', err);
+                    alert('保存失败');
+                }
+            });
+        }
+
+        if(btnDelMusic) {
+            btnDelMusic.addEventListener('click', async () => {
+                const id = musicEditId.value;
+                if (!id) return;
+                if (confirm('确定要删除这首歌曲吗？')) {
+                    try {
+                        await bunnyDB.music.delete(parseInt(id));
+                        musicEditModal.classList.remove('active');
+                        renderMusicList();
+                    } catch (err) {
+                        console.error('删除音乐失败', err);
+                    }
+                }
+            });
+        }
+
+        async function renderMusicList() {
+            if(!musicListContent) return;
+            musicListContent.innerHTML = '';
+            try {
+                const musics = await bunnyDB.music.toArray();
+                if (musics.length === 0) {
+                    musicListContent.innerHTML = '<div style="text-align:center; color:#cbaeb4; font-size: 13px; font-weight:600; margin-top:40px;">暂无本地音乐，点击右上角添加</div>';
+                    return;
+                }
+                
+                musics.sort((a, b) => b.updatedAt - a.updatedAt);
+                globalMusicList = musics;
+                
+                const listContainer = document.createElement('div');
+                listContainer.className = 'music-list-container';
+
+                musics.forEach(music => {
+                    const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
+                    const item = document.createElement('div');
+                    item.className = 'music-list-item';
+                    item.innerHTML = `
+                        <div class="music-item-left">
+                            <img src="${coverSrc}" class="music-item-cover">
+                            <div class="music-item-info">
+                                <div class="music-item-title">${music.title}</div>
+                                <div class="music-item-singer">${music.singer}</div>
+                            </div>
+                        </div>
+                        <div class="music-item-right">
+                            <div class="music-item-btn btn-play-music" data-id="${music.id}">
+                                <svg viewBox="0 0 24 24"><use href="#ic-music-note"/></svg>
+                            </div>
+                            <div class="music-item-btn btn-share-music" data-id="${music.id}">
+                                <svg viewBox="0 0 24 24"><use href="#ic-share"/></svg>
+                            </div>
+                            <div class="music-item-btn btn-edit-music" data-id="${music.id}">
+                                <svg viewBox="0 0 24 24"><use href="#ic-settings"/></svg>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                });
+                
+                musicListContent.appendChild(listContainer);
+
+                document.querySelectorAll('.btn-play-music').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        playMusicById(id);
+                    });
+                });
+
+                document.querySelectorAll('.btn-share-music').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        const music = await bunnyDB.music.get(parseInt(id));
+                        if (music) {
+                            alert(`即将把歌曲《${music.title}》分享给聊天角色...\n(分享功能模块已预留)`);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.btn-edit-music').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        const music = await bunnyDB.music.get(parseInt(id));
+                        if (music) {
+                            musicModalTitle.textContent = '编辑音乐';
+                            musicEditId.value = music.id;
+                            musicTitleInput.value = music.title;
+                            musicSingerInput.value = music.singer;
+                            
+                            currentMusicCoverBase64 = music.cover || '';
+                            if (currentMusicCoverBase64) {
+                                musicCoverTrigger.style.backgroundImage = `url('${currentMusicCoverBase64}')`;
+                                musicCoverTrigger.classList.add('has-img');
+                            } else {
+                                musicCoverTrigger.style.backgroundImage = '';
+                                musicCoverTrigger.classList.remove('has-img');
+                            }
+
+                            currentMusicAudioData = music.audio || '';
+                            if (currentMusicAudioData.startsWith('data:')) {
+                                btnUploadAudio.textContent = '已上传音源';
+                                btnUploadAudio.classList.add('has-file');
+                                if(musicUrlInput) musicUrlInput.value = '';
+                            } else {
+                                btnUploadAudio.textContent = '上传本地音源';
+                                btnUploadAudio.classList.remove('has-file');
+                                if(musicUrlInput) musicUrlInput.value = currentMusicAudioData;
+                            }
+
+                            currentMusicLrcData = music.lrc || '';
+                            if (currentMusicLrcData) {
+                                btnUploadLrc.textContent = '已上传歌词';
+                                btnUploadLrc.classList.add('has-file');
+                            } else {
+                                btnUploadLrc.textContent = '上传滚动歌词 (.lrc)';
+                                btnUploadLrc.classList.remove('has-file');
+                            }
+
+                            btnDelMusic.style.display = 'block';
+                            musicEditModal.classList.add('active');
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error('获取音乐列表失败', err);
+            }
+        }
+    } catch (e) {
+        console.error("音乐模块加载出错，但不影响其他功能：", e);
+    }
+});
