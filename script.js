@@ -4853,57 +4853,23 @@ window.addEventListener('DOMContentLoaded', () => {
         const playIcon = document.getElementById('icon-dock-play');
         const dockCover = document.getElementById('dock-music-cover');
         const progressFill = document.getElementById('music-progress-fill');
-        
-        // 获取全屏页面元素
-        const fmIconPlay = document.getElementById('fm-icon-play');
-        const fmLargeCover = document.getElementById('fm-large-cover');
-        const fmProgressFill = document.getElementById('fm-progress-fill');
-        const fmTimeCurrent = document.getElementById('fm-time-current');
-        const fmTimeTotal = document.getElementById('fm-time-total');
-
-        // 时间格式化辅助函数
-        function formatTime(seconds) {
-            if (isNaN(seconds) || seconds < 0) return "00:00";
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-        }
+        const progressContainer = document.getElementById('music-progress-container');
 
         globalAudio.addEventListener('play', () => {
             if(playIcon) playIcon.innerHTML = '<use href="#ic-pause"/>';
             if(dockCover) dockCover.classList.add('playing');
-            if(fmIconPlay) fmIconPlay.innerHTML = '<use href="#ic-pause"/>';
-            if(fmLargeCover) fmLargeCover.classList.add('playing');
         });
         globalAudio.addEventListener('pause', () => {
             if(playIcon) playIcon.innerHTML = '<use href="#ic-play"/>';
             if(dockCover) dockCover.classList.remove('playing');
-            if(fmIconPlay) fmIconPlay.innerHTML = '<use href="#ic-play"/>';
-            if(fmLargeCover) fmLargeCover.classList.remove('playing');
         });
-        
-        // 加载元数据时更新总时长
-        globalAudio.addEventListener('loadedmetadata', () => {
-            if (fmTimeTotal) fmTimeTotal.textContent = formatTime(globalAudio.duration);
-        });
-
 
         window.isDraggingProgress = false;
 
-                window.isDraggingFmProgress = false; // 全屏进度条拖拽状态
-
         globalAudio.addEventListener('timeupdate', () => {
-            if (globalAudio.duration) {
+            if (globalAudio.duration && progressFill && !window.isDraggingProgress) {
                 const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
-                // 更新小横条
-                if (progressFill && !window.isDraggingProgress) {
-                    progressFill.style.width = percent + '%';
-                }
-                // 更新全屏进度条和时间
-                if (fmProgressFill && !window.isDraggingFmProgress) {
-                    fmProgressFill.style.width = percent + '%';
-                    if (fmTimeCurrent) fmTimeCurrent.textContent = formatTime(globalAudio.currentTime);
-                }
+                progressFill.style.width = percent + '%';
             }
         });
         globalAudio.addEventListener('ended', playNextMusic);
@@ -4986,17 +4952,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 
                 const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
                 if(dockCover) dockCover.src = coverSrc;
-                if(fmLargeCover) fmLargeCover.src = coverSrc; // 同步大封面
-                
                 const titleEl = document.getElementById('dock-music-title');
                 const singerEl = document.getElementById('dock-music-singer');
-                const fmTitleEl = document.getElementById('fm-title');
-                const fmSingerEl = document.getElementById('fm-singer');
-                
                 if(titleEl) titleEl.textContent = music.title;
                 if(singerEl) singerEl.textContent = music.singer;
-                if(fmTitleEl) fmTitleEl.textContent = music.title;
-                if(fmSingerEl) fmSingerEl.textContent = music.singer;
             }
         }
 
@@ -5260,137 +5219,11 @@ window.addEventListener('DOMContentLoaded', () => {
                         }
                     });
                 });
-        // --- 新增：全屏音乐播放页独立逻辑 ---
-        
-        // 1. 点击右下角三条杠展开全屏
-        const musicDockMenu = document.querySelector('.music-dock-menu');
-        const fullMusicPage = document.getElementById('full-music-page');
-        if (musicDockMenu && fullMusicPage) {
-            musicDockMenu.addEventListener('click', () => {
-                fullMusicPage.classList.add('active');
-            });
-        }
-        
-        // 2. 关闭全屏
-        document.getElementById('full-music-back')?.addEventListener('click', () => {
-            fullMusicPage.classList.remove('active');
-        });
-
-        // 3. 全屏控制按钮
-        document.getElementById('fm-btn-play')?.addEventListener('click', () => {
-            if (!globalAudio.src) return;
-            if (globalAudio.paused) globalAudio.play();
-            else globalAudio.pause();
-        });
-        document.getElementById('fm-btn-prev')?.addEventListener('click', () => {
-            if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
-            let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
-            index = (index - 1 + globalMusicList.length) % globalMusicList.length;
-            playMusicById(globalMusicList[index].id);
-        });
-        document.getElementById('fm-btn-next')?.addEventListener('click', playNextMusic);
-
-        // 4. 全屏进度条拖拽逻辑
-        const fmProgressContainer = document.getElementById('fm-progress-container');
-        const updateFmProgress = (clientX) => {
-            if (!globalAudio.duration) return;
-            const rect = fmProgressContainer.getBoundingClientRect();
-            let clickX = clientX - rect.left;
-            if (clickX < 0) clickX = 0;
-            if (clickX > rect.width) clickX = rect.width;
-            const percent = clickX / rect.width;
-            if(fmProgressFill) {
-                fmProgressFill.style.transition = 'none'; 
-                fmProgressFill.style.width = (percent * 100) + '%';
+            } catch (err) {
+                console.error('获取音乐列表失败', err);
             }
-            if(fmTimeCurrent) fmTimeCurrent.textContent = formatTime(percent * globalAudio.duration);
-            return percent;
-        };
-
-        if (fmProgressContainer) {
-            fmProgressContainer.addEventListener('mousedown', (e) => {
-                window.isDraggingFmProgress = true;
-                updateFmProgress(e.clientX);
-            });
-            document.addEventListener('mousemove', (e) => {
-                if (window.isDraggingFmProgress) updateFmProgress(e.clientX);
-            });
-            document.addEventListener('mouseup', (e) => {
-                if (window.isDraggingFmProgress) {
-                    window.isDraggingFmProgress = false;
-                    const percent = updateFmProgress(e.clientX);
-                    globalAudio.currentTime = percent * globalAudio.duration;
-                    if(fmProgressFill) fmProgressFill.style.transition = 'width 0.1s linear';
-                }
-            });
-
-            fmProgressContainer.addEventListener('touchstart', (e) => {
-                window.isDraggingFmProgress = true;
-                updateFmProgress(e.touches[0].clientX);
-            }, { passive: true });
-            document.addEventListener('touchmove', (e) => {
-                if (window.isDraggingFmProgress) updateFmProgress(e.touches[0].clientX);
-            }, { passive: true });
-            document.addEventListener('touchend', (e) => {
-                if (window.isDraggingFmProgress) {
-                    window.isDraggingFmProgress = false;
-                    if (globalAudio.duration && fmProgressFill) {
-                        const percent = parseFloat(fmProgressFill.style.width) / 100;
-                        globalAudio.currentTime = percent * globalAudio.duration;
-                        fmProgressFill.style.transition = 'width 0.1s linear';
-                    }
-                }
-            });
         }
-
-        // 5. 角色选择与一起听歌逻辑
-        const btnSelectRole = document.getElementById('fm-btn-select-role');
-        const fmRoleModal = document.getElementById('fm-role-modal');
-        const fmRoleList = document.getElementById('fm-role-list');
-        const fmRoleAvatar = document.getElementById('fm-role-avatar');
-        const fmUserAvatar = document.getElementById('fm-user-avatar');
-
-        if (btnSelectRole && fmRoleModal) {
-            btnSelectRole.addEventListener('click', async () => {
-                fmRoleList.innerHTML = '';
-                try {
-                    const chats = await bunnyDB.characters.toArray();
-                    if (chats.length === 0) {
-                        fmRoleList.innerHTML = '<div style="text-align:center; color:#cbaeb4; font-size: 13px; font-weight:600; padding: 20px;">暂无角色，请先添加聊天角色</div>';
-                    } else {
-                        chats.forEach(chat => {
-                            const avatarSrc = chat.avatar || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ccc\'%3E%3Cpath d=\'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z\'/%3E%3C/svg%3E';
-                            const itemDiv = document.createElement('div');
-                            itemDiv.className = 'cp-device-item'; 
-                            itemDiv.innerHTML = `
-                                <img class="cp-device-avatar" src="${avatarSrc}">
-                                <div class="cp-device-name">${chat.name}</div>
-                            `;
-                            // 点击角色
-                            itemDiv.addEventListener('click', () => {
-                                // 替换左侧角色头像
-                                fmRoleAvatar.src = avatarSrc;
-                                fmRoleAvatar.classList.remove('default-add');
-                                
-                                // 替换右侧用户头像（读取该角色绑定的 userAvatar）
-                                const uAvatarSrc = chat.userAvatar || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ccc\'%3E%3Cpath d=\'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z\'/%3E%3C/svg%3E';
-                                fmUserAvatar.src = uAvatarSrc;
-                                
-                                fmRoleModal.classList.remove('active');
-                            });
-                            fmRoleList.appendChild(itemDiv);
-                        });
-                    }
-                    fmRoleModal.classList.add('active');
-                } catch (err) {
-                    console.error('读取角色失败', err);
-                }
-            });
-            
-            document.getElementById('btn-close-fm-role').addEventListener('click', () => {
-                fmRoleModal.classList.remove('active');
-            });
-        }
+    } catch (e) {
         console.error("音乐模块加载出错：", e);
     }
 });
