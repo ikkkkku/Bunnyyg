@@ -1772,24 +1772,47 @@ padding: 0;
     /* 进度条样式 */
     .music-progress-container {
         position: absolute;
-        top: -5px;
+        top: -10px;
         left: 5%;
         width: 90%;
-        height: 5px;
-        background: rgba(255, 182, 193, 0.3);
-        border-radius: 3px;
-        overflow: hidden;
+        height: 20px;
+        background: transparent;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        z-index: 10;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .music-progress-bg {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 182, 193, 0.3);
+        border-radius: 2px;
+        position: relative;
     }
     .music-progress-fill {
         height: 100%;
         width: 0%;
         background: var(--theme-pink-dark);
-        border-radius: 3px;
-        transition: width 0.1s linear;
+        border-radius: 2px;
+        position: absolute;
+        top: 0;
+        left: 0;
         pointer-events: none;
     }
-
+    .music-progress-thumb {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translate(50%, -50%);
+        width: 10px;
+        height: 10px;
+        background: #fff;
+        border: 2px solid var(--theme-pink-dark);
+        border-radius: 50%;
+        box-shadow: 0 1px 4px rgba(255, 182, 193, 0.5);
+        pointer-events: none;
+    }
     .music-dock-info {
         display: flex;
         flex-direction: column;
@@ -1823,9 +1846,10 @@ padding: 0;
         fill: currentColor;
         cursor: pointer;
     }
-    .music-dock-controls .play-btn svg {
-        width: 22px;
-        height: 22px;
+    .music-dock-controls .play-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .music-dock-menu {
         margin-left: 12px;
