@@ -492,12 +492,14 @@
             return;
         }
         url = url.replace(/\/+$/, '');
+        url = url.replace(/\/chat\/completions$/, '').replace(/\/models$/, '');
         try {
             const u = new URL(url);
             if (u.pathname === '/' || u.pathname === '') url += '/v1';
         } catch (e) {
             if (!url.endsWith('/v1')) url += '/v1';
         }
+
 
         btnFetchModels.textContent = '拉取中...';
         btnFetchModels.disabled = true;
@@ -525,12 +527,29 @@
                 throw new Error('返回数据格式不正确');
             }
         } catch (error) {
-            console.error(error);
-            alert(`拉取失败: ${error.message}\n请检查网址和密钥，或检查站点是否存在跨域限制。`);
+            console.error('拉取模型失败:', error);
+            // 智能兜底：如果因官方跨域限制或路径不存在导致拉取失败，直接提供常用模型供用户选择
+            const fallbackModels = [
+                'deepseek-chat', 'deepseek-reasoner', 
+                'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash',
+                'gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo',
+                'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
+                'qwen-max', 'qwen-plus', 'qwen-turbo',
+                'glm-4-plus', 'glm-4-flash'
+            ];
+            apiModelSelect.innerHTML = '<option value="">拉取失败，请在下方选择常用模型</option>';
+            fallbackModels.forEach(mId => {
+                const option = document.createElement('option');
+                option.value = mId;
+                option.textContent = mId;
+                apiModelSelect.appendChild(option);
+            });
+            alert(`拉取失败 (通常是因为官方接口存在浏览器跨域安全限制)。\n\n不用担心！已为您自动加载【常用模型列表】，请直接点击旁边的下拉框进行选择，或者直接手动输入模型名称！`);
         } finally {
             btnFetchModels.textContent = '拉取模型';
             btnFetchModels.disabled = false;
         }
+
     });
     async function loadApiSettings() {
         const config = await localforage.getItem('api_settings') || {};
@@ -1312,6 +1331,7 @@ document.querySelectorAll('.btn-del-preset').forEach(btn => {
         bpmEl.textContent = "感知中...";
         try {
             let apiUrl = config.url.replace(/\/+$/, '');
+            apiUrl = apiUrl.replace(/\/chat\/completions$/, '').replace(/\/models$/, '');
             try {
                 const u = new URL(apiUrl);
                 if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
@@ -2137,12 +2157,14 @@ document.getElementById('chat-detail-back').addEventListener('click', () => {
                 throw new Error('请先在设置页面配置并保存API信息！');
             }
             let apiUrl = config.url.replace(/\/+$/, '');
+            apiUrl = apiUrl.replace(/\/chat\/completions$/, '').replace(/\/models$/, '');
             try {
                 const u = new URL(apiUrl);
                 if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
             } catch (e) {
                 if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
             }
+
             let wbText = '';
             if (chat.bindWbs && chat.bindWbs.length > 0) {
                 const wbs = await bunnyDB.worldBook.where('id').anyOf(chat.bindWbs).toArray();
@@ -3363,6 +3385,7 @@ document.getElementById('btn-cs-block').addEventListener('click', async () => {
 对话记录：
 ${contextText}`;
         let apiUrl = config.url.replace(/\/+$/, '');
+        apiUrl = apiUrl.replace(/\/chat\/completions$/, '').replace(/\/models$/, '');
         try {
             const u = new URL(apiUrl);
             if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
@@ -4060,6 +4083,7 @@ ${taskPrompt}
   ${formatPrompt}
 }`;
                 let apiUrl = config.url.replace(/\/+$/, '');
+                apiUrl = apiUrl.replace(/\/chat\/completions$/, '').replace(/\/models$/, '');
                 try {
                     const u = new URL(apiUrl);
                     if (u.pathname === '/' || u.pathname === '') apiUrl += '/v1';
