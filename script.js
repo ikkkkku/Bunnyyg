@@ -4778,3 +4778,19 @@ chatRealImageInput.addEventListener('change', (e) => {
             });
         }
     });
+    // --- 新增：音乐页面逻辑 ---
+    const musicPage = document.getElementById('music-page');
+    document.querySelectorAll('.app-item').forEach(item => {
+        const nameEl = item.querySelector('.app-name');
+        if (nameEl && nameEl.textContent === '音乐') {
+            item.addEventListener('click', () => {
+                musicPage.classList.add('active');
+            });
+        }
+    });
+    const musicBackBtn = document.getElementById('music-back');
+    if (musicBackBtn) {
+        musicBackBtn.addEventListener('click', () => {
+            musicPage.classList.remove('active');
+        });
+        }
