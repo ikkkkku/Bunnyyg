@@ -4985,9 +4985,9 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         document.getElementById('btn-dock-next')?.addEventListener('click', playNextMusic);
 
-        // === 绝美恢复与强化：一起听歌功能核心逻辑 ===
+        // === 绝美重构：一起听歌功能核心逻辑 (全屏页、多条发送、自主切歌) ===
         let currentLtRole = null; 
-        const listenTogetherModal = document.getElementById('listen-together-modal');
+        const ltPage = document.getElementById('listen-together-page');
         const ltMusicCover = document.getElementById('lt-music-cover');
         const ltMusicTitle = document.getElementById('lt-music-title');
         const ltMusicSinger = document.getElementById('lt-music-singer');
@@ -4995,6 +4995,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const ltRoleName = document.getElementById('lt-role-name');
         const ltUserAvatar = document.getElementById('lt-user-avatar');
         const ltUserName = document.getElementById('lt-user-name');
+        const ltInviteHint = document.getElementById('lt-invite-hint');
         const ltChatContent = document.getElementById('lt-chat-content');
         const ltMsgInput = document.getElementById('lt-msg-input');
         const ltBtnSend = document.getElementById('lt-btn-send');
@@ -5002,11 +5003,77 @@ window.addEventListener('DOMContentLoaded', () => {
         const ltSelectRoleModal = document.getElementById('lt-select-role-modal');
         const ltRoleList = document.getElementById('lt-role-list');
 
-        // 同步大封面的旋转状态
-        globalAudio.addEventListener('play', () => { if(ltMusicCover) ltMusicCover.classList.add('playing'); });
-        globalAudio.addEventListener('pause', () => { if(ltMusicCover) ltMusicCover.classList.remove('playing'); });
+        // 底部控制栏同步
+        const ltBtnPlay = document.getElementById('lt-btn-play');
+        const ltIconPlay = document.getElementById('lt-icon-play');
+        const ltBtnPrev = document.getElementById('lt-btn-prev');
+        const ltBtnNext = document.getElementById('lt-btn-next');
+        const ltProgressBar = document.getElementById('lt-progress-bar');
+        const ltProgressFill = document.getElementById('lt-progress-fill');
 
-        // 点击底部播放栏左侧，打开“一起听歌”页面
+        // 同步大封面和播放按钮状态
+        globalAudio.addEventListener('play', () => { 
+            if(ltMusicCover) ltMusicCover.classList.add('playing'); 
+            if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause icon
+        });
+        globalAudio.addEventListener('pause', () => { 
+            if(ltMusicCover) ltMusicCover.classList.remove('playing'); 
+            if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Play icon
+        });
+
+        // 进度条同步与拖拽
+        let isDraggingLtProgress = false;
+        globalAudio.addEventListener('timeupdate', () => {
+            if (globalAudio.duration && ltProgressFill && !isDraggingLtProgress) {
+                ltProgressFill.style.width = ((globalAudio.currentTime / globalAudio.duration) * 100) + '%';
+            }
+        });
+        const updateLtProgress = (clientX) => {
+            if (!globalAudio.duration || !ltProgressBar) return;
+            const rect = ltProgressBar.getBoundingClientRect();
+            let clickX = clientX - rect.left;
+            if (clickX < 0) clickX = 0;
+            if (clickX > rect.width) clickX = rect.width;
+            const percent = clickX / rect.width;
+            if(ltProgressFill) {
+                ltProgressFill.style.transition = 'none';
+                ltProgressFill.style.width = (percent * 100) + '%';
+            }
+            return percent;
+        };
+        if (ltProgressBar) {
+            ltProgressBar.addEventListener('mousedown', (e) => { isDraggingLtProgress = true; updateLtProgress(e.clientX); });
+            document.addEventListener('mousemove', (e) => { if (isDraggingLtProgress) updateLtProgress(e.clientX); });
+            document.addEventListener('mouseup', (e) => {
+                if (isDraggingLtProgress) {
+                    isDraggingLtProgress = false;
+                    const percent = updateLtProgress(e.clientX);
+                    if (percent !== undefined) globalAudio.currentTime = percent * globalAudio.duration;
+                    if(ltProgressFill) ltProgressFill.style.transition = 'width 0.1s linear';
+                }
+            });
+            ltProgressBar.addEventListener('touchstart', (e) => { isDraggingLtProgress = true; updateLtProgress(e.touches[0].clientX); }, { passive: true });
+            document.addEventListener('touchmove', (e) => { if (isDraggingLtProgress) updateLtProgress(e.touches[0].clientX); }, { passive: true });
+            document.addEventListener('touchend', (e) => {
+                if (isDraggingLtProgress) {
+                    isDraggingLtProgress = false;
+                    if (globalAudio.duration && ltProgressFill) {
+                        globalAudio.currentTime = (parseFloat(ltProgressFill.style.width) / 100) * globalAudio.duration;
+                        ltProgressFill.style.transition = 'width 0.1s linear';
+                    }
+                }
+            });
+        }
+
+        // 底部按键绑定
+        ltBtnPlay?.addEventListener('click', () => {
+            if (!globalAudio.src) return;
+            if (globalAudio.paused) globalAudio.play(); else globalAudio.pause();
+        });
+        ltBtnPrev?.addEventListener('click', () => document.getElementById('btn-dock-prev')?.click());
+        ltBtnNext?.addEventListener('click', () => document.getElementById('btn-dock-next')?.click());
+
+        // 点击底部播放栏左侧，打开全屏“一起听歌”页面
         const dockLeft = document.querySelector('.music-dock-left');
         if (dockLeft) {
             dockLeft.addEventListener('click', async (e) => {
@@ -5019,20 +5086,25 @@ window.addEventListener('DOMContentLoaded', () => {
                     ltMusicTitle.textContent = music.title || '未知歌名';
                     ltMusicSinger.textContent = music.singer || '未知歌手';
                     
-                    if (!globalAudio.paused) ltMusicCover.classList.add('playing');
-                    else ltMusicCover.classList.remove('playing');
+                    if (!globalAudio.paused) {
+                        ltMusicCover.classList.add('playing');
+                        ltIconPlay.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+                    } else {
+                        ltMusicCover.classList.remove('playing');
+                        ltIconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>';
+                    }
 
-                    listenTogetherModal.classList.add('active');
+                    ltPage.classList.add('active');
                 }
             });
         }
 
-        // 关闭页面
-        document.getElementById('btn-close-lt-modal')?.addEventListener('click', () => {
-            listenTogetherModal.classList.remove('active');
+        // 右上角收起页面
+        document.getElementById('btn-close-lt-page')?.addEventListener('click', () => {
+            ltPage.classList.remove('active');
         });
 
-        // 点击左侧头像，打开选择角色弹窗
+        // 点击左侧头像选择角色
         document.getElementById('lt-btn-select-role')?.addEventListener('click', async () => {
             ltRoleList.innerHTML = '';
             const chats = await bunnyDB.characters.toArray();
@@ -5047,14 +5119,13 @@ window.addEventListener('DOMContentLoaded', () => {
                     
                     itemDiv.addEventListener('click', () => {
                         currentLtRole = chat;
-                        // 更新左侧角色头像和名字
                         ltRoleAvatar.src = avatarSrc;
                         ltRoleName.textContent = chat.name;
-                        // 更新右侧用户绑定的头像和名字
                         ltUserAvatar.src = chat.userAvatar || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ccc\'%3E%3Cpath d=\'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z\'/%3E%3C/svg%3E';
                         ltUserName.textContent = chat.userName || '我';
                         
-                        ltChatContent.innerHTML = `<div style="text-align:center; color:var(--theme-pink-dark); font-size:12px; font-weight: 700; margin-bottom: 10px;">你邀请了 ${chat.name} 一起听歌 🎧</div>`;
+                        ltInviteHint.textContent = `你邀请了 ${chat.name} 一起听歌 🎧`;
+                        ltChatContent.innerHTML = ''; // 清空聊天
                         ltSelectRoleModal.classList.remove('active');
                     });
                     ltRoleList.appendChild(itemDiv);
@@ -5069,17 +5140,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
         function appendLtMsg(roleType, text, avatarUrl) {
             const row = document.createElement('div');
-            row.className = `lt-msg-row ${roleType}`;
+            row.className = `lt-msg ${roleType}`;
             if (roleType === 'user') {
-                row.innerHTML = `<div class="lt-bubble">${text}</div><img src="${avatarUrl}" class="lt-avatar">`;
+                row.innerHTML = `<div class="lt-bubble">${text}</div><img src="${avatarUrl}">`;
             } else {
-                row.innerHTML = `<img src="${avatarUrl}" class="lt-avatar"><div class="lt-bubble">${text}</div>`;
+                row.innerHTML = `<img src="${avatarUrl}"><div class="lt-bubble">${text}</div>`;
             }
             ltChatContent.appendChild(row);
             ltChatContent.scrollTop = ltChatContent.scrollHeight;
         }
 
-        // 发送消息并调用 AI 接口
+        // 发送消息与高拟真切歌逻辑
         ltBtnSend?.addEventListener('click', async () => {
             if (!currentLtRole) return alert('请先点击左侧头像邀请一个角色！');
             const text = ltMsgInput.value.trim();
@@ -5103,7 +5174,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 let apiUrl = config.url.replace(/\/+$/, '').replace(/\/chat\/completions$/, '').replace(/\/models$/, '');
                 if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
 
-                // 提取最近5条真实聊天历史作为性格参考
                 const rawHistory = await bunnyDB.chatHistory.where('roleId').equals(currentLtRole.id).reverse().limit(5).toArray();
                 rawHistory.reverse();
                 const historyStr = rawHistory.map(m => {
@@ -5112,26 +5182,33 @@ window.addEventListener('DOMContentLoaded', () => {
                     return `${m.role === 'user' ? currentLtRole.userName : currentLtRole.name}: ${c}`;
                 }).join('\n');
 
+                // 核心：让 AI 输出数组，支持多条发送和切歌指令
                 const prompt = `你正在进行极度真实的线上角色扮演。
-【角色设定】姓名：${currentLtRole.name}，性格：${currentLtRole.desc}
-【用户设定】姓名：${currentLtRole.userName}
-【当前场景】此刻，你和${currentLtRole.userName}正戴着同一副耳机（或通过连麦），正在一起听一首歌。
-🎵 正在播放的歌曲信息：
-- 歌名：《${music.title}》
-- 歌手：${music.singer}
-${music.lrc ? `- 歌词参考：\n${music.lrc.substring(0, 300)}...` : ''}
+【场景】此刻，你和${currentLtRole.userName}正戴着同一副耳机，正在一起听歌。
+🎵 当前播放：《${music.title}》 - ${music.singer}
+${music.lrc ? `歌词参考：\n${music.lrc.substring(0, 300)}...` : ''}
 
-【近期聊天参考】（仅用于保持性格连贯）：
+【近期聊天参考】：
 ${historyStr || '暂无'}
 
 【用户刚才对你说的悄悄话】：
 ${currentLtRole.userName}：${text}
 
 【任务要求】
-请深刻感知这首歌的氛围，结合你的人设，对用户的话做出自然、简短的回复。
-你可以聊聊这首歌的旋律、某句歌词，或者表达你此刻挨着TA听歌的感受。
-⚠️ 绝对禁止输出任何 markdown、思考过程或旁白括号（如 *微笑*）。
-⚠️ 必须只输出你说的话，像微信聊天一样简短真实。`;
+1. 请深刻感知这首歌的氛围，结合你的人设对用户做出自然回复。
+2. 必须模拟真人习惯，将回复拆分为 1 到 3 条短句发送。
+3. 【切歌特权】如果你觉得这首歌太吵、难听，或者不符合你此刻的心情，你可以行使切歌特权！
+4. 必须严格输出纯 JSON 数组格式，严禁包含 markdown 或旁白！
+格式示例：
+[
+  {"type": "text", "content": "这首歌旋律还挺好听的"},
+  {"type": "text", "content": "你平时也喜欢听这种吗？"}
+]
+如果要切歌，请使用 skip_song 类型：
+[
+  {"type": "text", "content": "这首歌太吵了，我不喜欢"},
+  {"type": "skip_song", "content": "我切了哦，听点别的"}
+]`;
 
                 const response = await fetch(`${apiUrl}/chat/completions`, {
                     method: 'POST',
@@ -5147,23 +5224,47 @@ ${currentLtRole.userName}：${text}
                 const data = await response.json();
                 let replyText = data.choices[0].message.content.trim();
                 replyText = replyText.replace(/[\s\S]*?<\/think>/gi, '').trim();
+                replyText = replyText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
-                appendLtMsg('ai', replyText, currentLtRole.avatar || ltRoleAvatar.src);
+                let parsedMsgs = [];
+                try {
+                    parsedMsgs = JSON.parse(replyText);
+                    if (!Array.isArray(parsedMsgs)) parsedMsgs = [parsedMsgs];
+                } catch(e) {
+                    parsedMsgs = [{"type": "text", "content": replyText}];
+                }
 
-                // 将听歌聊天静默存入主聊天记录中作为记忆
+                // 记录用户消息到主数据库
                 const now = Date.now();
                 await bunnyDB.chatHistory.put({
-                    roleId: currentLtRole.id,
-                    role: 'user',
-                    content: `[一起听歌《${music.title}》时说]：${text}`,
-                    timestamp: now
+                    roleId: currentLtRole.id, role: 'user',
+                    content: `[一起听歌《${music.title}》时说]：${text}`, timestamp: now
                 });
-                await bunnyDB.chatHistory.put({
-                    roleId: currentLtRole.id,
-                    role: 'assistant',
-                    content: replyText,
-                    timestamp: now + 1000
-                });
+
+                // 逐条渲染 AI 消息
+                for (let i = 0; i < parsedMsgs.length; i++) {
+                    const msg = parsedMsgs[i];
+                    if (!msg.content) continue;
+                    
+                    appendLtMsg('ai', msg.content, currentLtRole.avatar || ltRoleAvatar.src);
+                    
+                    await bunnyDB.chatHistory.put({
+                        roleId: currentLtRole.id, role: 'assistant',
+                        content: msg.content, timestamp: now + (i+1)*1000
+                    });
+
+                    // 如果 AI 触发了切歌指令
+                    if (msg.type === 'skip_song') {
+                        setTimeout(() => {
+                            ltBtnNext.click(); // 触发下一首按钮
+                            appendLtMsg('ai', '*(TA 切到了下一首歌)*', currentLtRole.avatar || ltRoleAvatar.src);
+                        }, 1500); // 延迟1.5秒让用户看清文字再切
+                    }
+
+                    if (i < parsedMsgs.length - 1) {
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
+                }
 
             } catch (err) {
                 console.error(err);
@@ -5179,251 +5280,6 @@ ${currentLtRole.userName}：${text}
             if (e.key === 'Enter') ltBtnSend.click();
         });
 
-        // --- 弹窗与文件上传逻辑 ---
-        if(musicCoverTrigger) {
-            musicCoverTrigger.addEventListener('click', () => musicCoverInput?.click());
-        }
-        if(musicCoverInput) {
-            musicCoverInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    currentMusicCoverBase64 = event.target.result;
-                    musicCoverTrigger.style.backgroundImage = `url('${currentMusicCoverBase64}')`;
-                    musicCoverTrigger.classList.add('has-img');
-                };
-                reader.readAsDataURL(file);
-                musicCoverInput.value = '';
-            });
-        }
-
-        if(btnUploadAudio) {
-            btnUploadAudio.addEventListener('click', () => musicAudioInput?.click());
-        }
-        if(musicAudioInput) {
-            musicAudioInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    currentMusicAudioData = event.target.result;
-                    btnUploadAudio.textContent = '已上传音源';
-                    btnUploadAudio.classList.add('has-file');
-                    if(musicUrlInput) musicUrlInput.value = ''; 
-                };
-                reader.readAsDataURL(file);
-                musicAudioInput.value = '';
-            });
-        }
-
-        if(btnUploadLrc) {
-            btnUploadLrc.addEventListener('click', () => musicLrcInput?.click());
-        }
-        if(musicLrcInput) {
-            musicLrcInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    currentMusicLrcData = event.target.result;
-                    btnUploadLrc.textContent = '已上传歌词';
-                    btnUploadLrc.classList.add('has-file');
-                };
-                reader.readAsText(file);
-                musicLrcInput.value = '';
-            });
-        }
-
-        if(btnAddMusic) {
-            btnAddMusic.addEventListener('click', () => {
-                musicModalTitle.textContent = '添加音乐';
-                musicEditId.value = '';
-                musicTitleInput.value = '';
-                musicSingerInput.value = '';
-                musicUrlInput.value = '';
-                
-                currentMusicCoverBase64 = '';
-                musicCoverTrigger.style.backgroundImage = '';
-                musicCoverTrigger.classList.remove('has-img');
-                
-                currentMusicAudioData = '';
-                btnUploadAudio.textContent = '上传本地音源';
-                btnUploadAudio.classList.remove('has-file');
-                
-                currentMusicLrcData = '';
-                btnUploadLrc.textContent = '上传滚动歌词 (.lrc)';
-                btnUploadLrc.classList.remove('has-file');
-
-                btnDelMusic.style.display = 'none';
-                musicEditModal.classList.add('active');
-            });
-        }
-
-        if(btnCloseMusicModal) {
-            btnCloseMusicModal.addEventListener('click', () => {
-                musicEditModal.classList.remove('active');
-            });
-        }
-
-        if(btnSaveMusic) {
-            btnSaveMusic.addEventListener('click', async () => {
-                const title = musicTitleInput.value.trim();
-                const singer = musicSingerInput.value.trim();
-                const url = musicUrlInput.value.trim();
-                
-                if (!title) return alert('请输入歌曲名');
-
-                const finalAudioData = currentMusicAudioData || url;
-                if (!finalAudioData) return alert('请提供音源URL或上传本地音源');
-
-                const musicData = {
-                    title: title,
-                    singer: singer || '未知歌手',
-                    cover: currentMusicCoverBase64,
-                    audio: finalAudioData,
-                    lrc: currentMusicLrcData,
-                    updatedAt: Date.now()
-                };
-
-                try {
-                    const id = musicEditId.value;
-                    if (id) {
-                        await bunnyDB.music.update(parseInt(id), musicData);
-                    } else {
-                        await bunnyDB.music.add(musicData);
-                    }
-                    musicEditModal.classList.remove('active');
-                    renderMusicList();
-                } catch (err) {
-                    console.error('保存音乐失败', err);
-                    alert('保存失败');
-                }
-            });
-        }
-
-        if(btnDelMusic) {
-            btnDelMusic.addEventListener('click', async () => {
-                const id = musicEditId.value;
-                if (!id) return;
-                if (confirm('确定要删除这首歌曲吗？')) {
-                    try {
-                        await bunnyDB.music.delete(parseInt(id));
-                        musicEditModal.classList.remove('active');
-                        renderMusicList();
-                    } catch (err) {
-                        console.error('删除音乐失败', err);
-                    }
-                }
-            });
-        }
-
-        async function renderMusicList() {
-            if(!musicListContent) return;
-            musicListContent.innerHTML = '';
-            try {
-                const musics = await bunnyDB.music.toArray();
-                if (musics.length === 0) {
-                    musicListContent.innerHTML = '<div style="text-align:center; color:#cbaeb4; font-size: 13px; font-weight:600; margin-top:40px;">暂无本地音乐，点击右上角添加</div>';
-                    return;
-                }
-                
-                musics.sort((a, b) => b.updatedAt - a.updatedAt);
-                globalMusicList = musics;
-                
-                const listContainer = document.createElement('div');
-                listContainer.className = 'music-list-container';
-
-                musics.forEach(music => {
-                    const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
-                    const item = document.createElement('div');
-                    item.className = 'music-list-item';
-                    item.innerHTML = `
-                        <div class="music-item-left">
-                            <img src="${coverSrc}" class="music-item-cover">
-                            <div class="music-item-info">
-                                <div class="music-item-title">${music.title}</div>
-                                <div class="music-item-singer">${music.singer}</div>
-                            </div>
-                        </div>
-                        <div class="music-item-right">
-                            <div class="music-item-btn btn-play-music" data-id="${music.id}">
-                                <svg viewBox="0 0 24 24"><use href="#ic-music-note"/></svg>
-                            </div>
-                            <div class="music-item-btn btn-share-music" data-id="${music.id}">
-                                <svg viewBox="0 0 24 24"><use href="#ic-share"/></svg>
-                            </div>
-                            <div class="music-item-btn btn-edit-music" data-id="${music.id}">
-                                <svg viewBox="0 0 24 24"><use href="#ic-settings"/></svg>
-                            </div>
-                        </div>
-                    `;
-                    listContainer.appendChild(item);
-                });
-                
-                musicListContent.appendChild(listContainer);
-
-                document.querySelectorAll('.btn-play-music').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const id = e.currentTarget.getAttribute('data-id');
-                        playMusicById(id);
-                    });
-                });
-
-                document.querySelectorAll('.btn-share-music').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = e.currentTarget.getAttribute('data-id');
-                        const music = await bunnyDB.music.get(parseInt(id));
-                        if (music) {
-                            alert(`即将把歌曲《${music.title}》分享给聊天角色...\n(分享功能模块已预留)`);
-                        }
-                    });
-                });
-
-                document.querySelectorAll('.btn-edit-music').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const id = e.currentTarget.getAttribute('data-id');
-                        const music = await bunnyDB.music.get(parseInt(id));
-                        if (music) {
-                            musicModalTitle.textContent = '编辑音乐';
-                            musicEditId.value = music.id;
-                            musicTitleInput.value = music.title;
-                            musicSingerInput.value = music.singer;
-                            
-                            currentMusicCoverBase64 = music.cover || '';
-                            if (currentMusicCoverBase64) {
-                                musicCoverTrigger.style.backgroundImage = `url('${currentMusicCoverBase64}')`;
-                                musicCoverTrigger.classList.add('has-img');
-                            } else {
-                                musicCoverTrigger.style.backgroundImage = '';
-                                musicCoverTrigger.classList.remove('has-img');
-                            }
-
-                            currentMusicAudioData = music.audio || '';
-                            if (currentMusicAudioData.startsWith('data:')) {
-                                btnUploadAudio.textContent = '已上传音源';
-                                btnUploadAudio.classList.add('has-file');
-                                if(musicUrlInput) musicUrlInput.value = '';
-                            } else {
-                                btnUploadAudio.textContent = '上传本地音源';
-                                btnUploadAudio.classList.remove('has-file');
-                                if(musicUrlInput) musicUrlInput.value = currentMusicAudioData;
-                            }
-
-                            currentMusicLrcData = music.lrc || '';
-                            if (currentMusicLrcData) {
-                                btnUploadLrc.textContent = '已上传歌词';
-                                btnUploadLrc.classList.add('has-file');
-                            } else {
-                                btnUploadLrc.textContent = '上传滚动歌词 (.lrc)';
-                                btnUploadLrc.classList.remove('has-file');
-                            }
-
-                            btnDelMusic.style.display = 'block';
-                            musicEditModal.classList.add('active');
-                        }
-                    });
-                });
             } catch (err) {
                 console.error('获取音乐列表失败', err);
             }
@@ -5432,3 +5288,4 @@ ${currentLtRole.userName}：${text}
         console.error("音乐模块加载出错：", e);
     }
 });
+
