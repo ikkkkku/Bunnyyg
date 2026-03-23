@@ -4984,7 +4984,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-dock-next')?.addEventListener('click', playNextMusic);
         globalAudio.addEventListener('ended', playNextMusic);
 
-                // === 绝美重构：一起听歌功能核心逻辑 (全屏页、无头像气泡、翻转歌词) ===
+                        // === 绝美重构：一起听歌功能核心逻辑 (全屏页、无头像气泡、翻转歌词、退出弹窗) ===
         let currentLtRole = null; 
         const ltPage = document.getElementById('listen-together-page');
         const ltMusicCover = document.getElementById('lt-music-cover');
@@ -5009,7 +5009,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const ltProgressBar = document.getElementById('lt-progress-bar');
         const ltProgressFill = document.getElementById('lt-progress-fill');
 
-        // --- 歌词解析与翻转控制 ---
+        // --- 歌词解析与无背景翻转控制 ---
         const ltCoverFlipper = document.getElementById('lt-cover-flipper');
         const ltLrcContainer = document.getElementById('lt-lrc-container');
         let currentParsedLrc = [];
@@ -5018,7 +5018,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if (ltCoverFlipper) {
             ltCoverFlipper.addEventListener('click', () => {
                 ltCoverFlipper.classList.toggle('flipped');
-                // 翻转到背面时，自动滚动到当前歌词句
                 if (ltCoverFlipper.classList.contains('flipped') && currentLrcIndex >= 0) {
                     setTimeout(() => {
                         const activeLine = document.getElementById('lt-lrc-line-' + currentLrcIndex);
@@ -5069,7 +5068,6 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 同步大封面和播放按钮状态
         globalAudio.addEventListener('play', () => { 
             if(ltMusicCover) ltMusicCover.classList.add('playing'); 
             if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
@@ -5079,14 +5077,12 @@ window.addEventListener('DOMContentLoaded', () => {
             if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>';
         });
 
-        // 进度条与歌词同步
         let isDraggingLtProgress = false;
         globalAudio.addEventListener('timeupdate', () => {
             const cTime = globalAudio.currentTime;
             if (globalAudio.duration && ltProgressFill && !isDraggingLtProgress) {
                 ltProgressFill.style.width = ((cTime / globalAudio.duration) * 100) + '%';
             }
-            // 歌词高亮滚动
             if (currentParsedLrc.length > 0) {
                 let index = currentParsedLrc.findIndex(l => l.time > cTime) - 1;
                 if (index === -2) index = currentParsedLrc.length - 1; 
@@ -5152,7 +5148,7 @@ window.addEventListener('DOMContentLoaded', () => {
         ltBtnPrev?.addEventListener('click', () => document.getElementById('btn-dock-prev')?.click());
         ltBtnNext?.addEventListener('click', () => document.getElementById('btn-dock-next')?.click());
 
-        // 打开全屏页面时，加载背景和歌词
+        // 打开全屏页面
         const dockLeft = document.querySelector('.music-dock-left');
         if (dockLeft) {
             dockLeft.addEventListener('click', async (e) => {
@@ -5165,10 +5161,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     ltMusicTitle.textContent = music.title || '未知歌名';
                     ltMusicSinger.textContent = music.singer || '未知歌手';
                     
-                    // 解析并渲染歌词
                     currentParsedLrc = parseLrc(music.lrc);
                     renderLrcToContainer(currentParsedLrc);
-                    if(ltCoverFlipper) ltCoverFlipper.classList.remove('flipped'); // 默认展示正面
+                    if(ltCoverFlipper) ltCoverFlipper.classList.remove('flipped'); 
                     
                     if (!globalAudio.paused) {
                         ltMusicCover.classList.add('playing');
@@ -5183,10 +5178,30 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // --- 3. 退出或最小化弹窗逻辑 ---
+        const ltExitModal = document.getElementById('lt-exit-modal');
         document.getElementById('btn-close-lt-page')?.addEventListener('click', () => {
+            if(ltExitModal) ltExitModal.classList.add('active');
+        });
+        document.getElementById('btn-lt-cancel-exit')?.addEventListener('click', () => {
+            if(ltExitModal) ltExitModal.classList.remove('active');
+        });
+        document.getElementById('btn-lt-minimize')?.addEventListener('click', () => {
+            if(ltExitModal) ltExitModal.classList.remove('active');
             if(ltPage) ltPage.classList.remove('active');
         });
+        document.getElementById('btn-lt-exit')?.addEventListener('click', () => {
+            if(ltExitModal) ltExitModal.classList.remove('active');
+            if(ltPage) ltPage.classList.remove('active');
+            globalAudio.pause(); // 结束听歌时停止播放
+            currentLtRole = null; // 清空陪伴角色
+            if(ltRoleAvatar) ltRoleAvatar.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+            if(ltRoleName) ltRoleName.textContent = '选角色';
+            if(ltInviteHint) ltInviteHint.textContent = '点击左侧头像邀请TA一起听歌 🎧';
+            if(ltChatContent) ltChatContent.innerHTML = '';
+        });
 
+        // 选择角色
         document.getElementById('lt-btn-select-role')?.addEventListener('click', async () => {
             if(!ltRoleList) return;
             ltRoleList.innerHTML = '';
@@ -5221,7 +5236,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if(ltSelectRoleModal) ltSelectRoleModal.classList.remove('active');
         });
 
-        // 核心修改：移除头像渲染，只留下纯净气泡
+        // 无头像气泡渲染
         function appendLtMsg(roleType, text) {
             if(!ltChatContent) return;
             const row = document.createElement('div');
@@ -5240,7 +5255,6 @@ window.addEventListener('DOMContentLoaded', () => {
             const music = await bunnyDB.music.get(parseInt(currentPlayingMusicId));
             if (!music) return;
 
-            // 渲染用户消息 (不再需要传头像)
             appendLtMsg('user', text);
             ltMsgInput.value = '';
             
@@ -5324,7 +5338,6 @@ ${currentLtRole.userName}：${text}
                     const msg = parsedMsgs[i];
                     if (!msg.content) continue;
                     
-                    // 渲染 AI 消息 (不再需要传头像)
                     appendLtMsg('ai', msg.content);
                     
                     await bunnyDB.chatHistory.put({
