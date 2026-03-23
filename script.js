@@ -4984,7 +4984,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-dock-next')?.addEventListener('click', playNextMusic);
         globalAudio.addEventListener('ended', playNextMusic);
 
-        // === 绝美重构：一起听歌功能核心逻辑 (全屏页、多条发送、自主切歌) ===
+                // === 绝美重构：一起听歌功能核心逻辑 (全屏页、无头像气泡、翻转歌词) ===
         let currentLtRole = null; 
         const ltPage = document.getElementById('listen-together-page');
         const ltMusicCover = document.getElementById('lt-music-cover');
@@ -5002,7 +5002,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const ltSelectRoleModal = document.getElementById('lt-select-role-modal');
         const ltRoleList = document.getElementById('lt-role-list');
 
-        // 底部控制栏同步
         const ltBtnPlay = document.getElementById('lt-btn-play');
         const ltIconPlay = document.getElementById('lt-icon-play');
         const ltBtnPrev = document.getElementById('lt-btn-prev');
@@ -5010,23 +5009,105 @@ window.addEventListener('DOMContentLoaded', () => {
         const ltProgressBar = document.getElementById('lt-progress-bar');
         const ltProgressFill = document.getElementById('lt-progress-fill');
 
+        // --- 歌词解析与翻转控制 ---
+        const ltCoverFlipper = document.getElementById('lt-cover-flipper');
+        const ltLrcContainer = document.getElementById('lt-lrc-container');
+        let currentParsedLrc = [];
+        let currentLrcIndex = -1;
+
+        if (ltCoverFlipper) {
+            ltCoverFlipper.addEventListener('click', () => {
+                ltCoverFlipper.classList.toggle('flipped');
+                // 翻转到背面时，自动滚动到当前歌词句
+                if (ltCoverFlipper.classList.contains('flipped') && currentLrcIndex >= 0) {
+                    setTimeout(() => {
+                        const activeLine = document.getElementById('lt-lrc-line-' + currentLrcIndex);
+                        if (activeLine && ltLrcContainer) {
+                            ltLrcContainer.scrollTo({
+                                top: activeLine.offsetTop - ltLrcContainer.clientHeight / 2 + activeLine.clientHeight / 2,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }, 300);
+                }
+            });
+        }
+
+        function parseLrc(lrcStr) {
+            if (!lrcStr) return [];
+            const lines = lrcStr.split('\n');
+            const result = [];
+            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+            for (let line of lines) {
+                const match = timeReg.exec(line);
+                if (match) {
+                    const min = parseInt(match[1]);
+                    const sec = parseInt(match[2]);
+                    const ms = match[3].length === 2 ? parseInt(match[3]) * 10 : parseInt(match[3]);
+                    const time = min * 60 + sec + ms / 1000;
+                    const text = line.replace(timeReg, '').trim();
+                    if (text) result.push({ time, text });
+                }
+            }
+            return result;
+        }
+
+        function renderLrcToContainer(lrcData) {
+            if (!ltLrcContainer) return;
+            ltLrcContainer.innerHTML = '';
+            currentLrcIndex = -1;
+            if (!lrcData || lrcData.length === 0) {
+                ltLrcContainer.innerHTML = '<div class="lt-lrc-line">暂无歌词</div>';
+                return;
+            }
+            lrcData.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'lt-lrc-line';
+                el.id = 'lt-lrc-line-' + index;
+                el.textContent = item.text;
+                ltLrcContainer.appendChild(el);
+            });
+        }
+
         // 同步大封面和播放按钮状态
         globalAudio.addEventListener('play', () => { 
             if(ltMusicCover) ltMusicCover.classList.add('playing'); 
-            if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause icon
+            if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
         });
         globalAudio.addEventListener('pause', () => { 
             if(ltMusicCover) ltMusicCover.classList.remove('playing'); 
-            if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Play icon
+            if(ltIconPlay) ltIconPlay.innerHTML = '<path d="M8 5v14l11-7z"/>';
         });
 
-        // 进度条同步与拖拽
+        // 进度条与歌词同步
         let isDraggingLtProgress = false;
         globalAudio.addEventListener('timeupdate', () => {
+            const cTime = globalAudio.currentTime;
             if (globalAudio.duration && ltProgressFill && !isDraggingLtProgress) {
-                ltProgressFill.style.width = ((globalAudio.currentTime / globalAudio.duration) * 100) + '%';
+                ltProgressFill.style.width = ((cTime / globalAudio.duration) * 100) + '%';
+            }
+            // 歌词高亮滚动
+            if (currentParsedLrc.length > 0) {
+                let index = currentParsedLrc.findIndex(l => l.time > cTime) - 1;
+                if (index === -2) index = currentParsedLrc.length - 1; 
+                if (index !== currentLrcIndex && index >= 0) {
+                    const oldLine = document.getElementById('lt-lrc-line-' + currentLrcIndex);
+                    if (oldLine) oldLine.classList.remove('active');
+                    currentLrcIndex = index;
+                    const newLine = document.getElementById('lt-lrc-line-' + currentLrcIndex);
+                    if (newLine) {
+                        newLine.classList.add('active');
+                        if (ltCoverFlipper && ltCoverFlipper.classList.contains('flipped') && ltLrcContainer) {
+                            ltLrcContainer.scrollTo({
+                                top: newLine.offsetTop - ltLrcContainer.clientHeight / 2 + newLine.clientHeight / 2,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                }
             }
         });
+
         const updateLtProgress = (clientX) => {
             if (!globalAudio.duration || !ltProgressBar) return;
             const rect = ltProgressBar.getBoundingClientRect();
@@ -5064,7 +5145,6 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 底部按键绑定
         ltBtnPlay?.addEventListener('click', () => {
             if (!globalAudio.src) return;
             if (globalAudio.paused) globalAudio.play(); else globalAudio.pause();
@@ -5072,7 +5152,7 @@ window.addEventListener('DOMContentLoaded', () => {
         ltBtnPrev?.addEventListener('click', () => document.getElementById('btn-dock-prev')?.click());
         ltBtnNext?.addEventListener('click', () => document.getElementById('btn-dock-next')?.click());
 
-        // 点击底部播放栏左侧，打开全屏“一起听歌”页面
+        // 打开全屏页面时，加载背景和歌词
         const dockLeft = document.querySelector('.music-dock-left');
         if (dockLeft) {
             dockLeft.addEventListener('click', async (e) => {
@@ -5084,6 +5164,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     ltMusicCover.src = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=600&q=80';
                     ltMusicTitle.textContent = music.title || '未知歌名';
                     ltMusicSinger.textContent = music.singer || '未知歌手';
+                    
+                    // 解析并渲染歌词
+                    currentParsedLrc = parseLrc(music.lrc);
+                    renderLrcToContainer(currentParsedLrc);
+                    if(ltCoverFlipper) ltCoverFlipper.classList.remove('flipped'); // 默认展示正面
                     
                     if (!globalAudio.paused) {
                         ltMusicCover.classList.add('playing');
@@ -5098,12 +5183,10 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 右上角收起页面
         document.getElementById('btn-close-lt-page')?.addEventListener('click', () => {
             if(ltPage) ltPage.classList.remove('active');
         });
 
-        // 点击左侧头像选择角色
         document.getElementById('lt-btn-select-role')?.addEventListener('click', async () => {
             if(!ltRoleList) return;
             ltRoleList.innerHTML = '';
@@ -5125,7 +5208,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         if(ltUserName) ltUserName.textContent = chat.userName || '我';
                         
                         if(ltInviteHint) ltInviteHint.textContent = `你邀请了 ${chat.name} 一起听歌 🎧`;
-                        if(ltChatContent) ltChatContent.innerHTML = ''; // 清空聊天
+                        if(ltChatContent) ltChatContent.innerHTML = ''; 
                         if(ltSelectRoleModal) ltSelectRoleModal.classList.remove('active');
                     });
                     ltRoleList.appendChild(itemDiv);
@@ -5138,20 +5221,16 @@ window.addEventListener('DOMContentLoaded', () => {
             if(ltSelectRoleModal) ltSelectRoleModal.classList.remove('active');
         });
 
-        function appendLtMsg(roleType, text, avatarUrl) {
+        // 核心修改：移除头像渲染，只留下纯净气泡
+        function appendLtMsg(roleType, text) {
             if(!ltChatContent) return;
             const row = document.createElement('div');
             row.className = `lt-msg ${roleType}`;
-            if (roleType === 'user') {
-                row.innerHTML = `<div class="lt-bubble">${text}</div><img src="${avatarUrl}">`;
-            } else {
-                row.innerHTML = `<img src="${avatarUrl}"><div class="lt-bubble">${text}</div>`;
-            }
+            row.innerHTML = `<div class="lt-bubble">${text}</div>`;
             ltChatContent.appendChild(row);
             ltChatContent.scrollTop = ltChatContent.scrollHeight;
         }
 
-        // 发送消息与高拟真切歌逻辑
         ltBtnSend?.addEventListener('click', async () => {
             if (!currentLtRole) return alert('请先点击左侧头像邀请一个角色！');
             const text = ltMsgInput.value.trim();
@@ -5161,7 +5240,8 @@ window.addEventListener('DOMContentLoaded', () => {
             const music = await bunnyDB.music.get(parseInt(currentPlayingMusicId));
             if (!music) return;
 
-            appendLtMsg('user', text, currentLtRole.userAvatar || ltUserAvatar.src);
+            // 渲染用户消息 (不再需要传头像)
+            appendLtMsg('user', text);
             ltMsgInput.value = '';
             
             ltBtnSend.disabled = true;
@@ -5244,7 +5324,8 @@ ${currentLtRole.userName}：${text}
                     const msg = parsedMsgs[i];
                     if (!msg.content) continue;
                     
-                    appendLtMsg('ai', msg.content, currentLtRole.avatar || ltRoleAvatar.src);
+                    // 渲染 AI 消息 (不再需要传头像)
+                    appendLtMsg('ai', msg.content);
                     
                     await bunnyDB.chatHistory.put({
                         roleId: currentLtRole.id, role: 'assistant',
@@ -5254,7 +5335,7 @@ ${currentLtRole.userName}：${text}
                     if (msg.type === 'skip_song') {
                         setTimeout(() => {
                             if(ltBtnNext) ltBtnNext.click(); 
-                            appendLtMsg('ai', '*(TA 切到了下一首歌)*', currentLtRole.avatar || ltRoleAvatar.src);
+                            appendLtMsg('ai', '*(TA 切到了下一首歌)*');
                         }, 1500); 
                     }
 
@@ -5265,7 +5346,7 @@ ${currentLtRole.userName}：${text}
 
             } catch (err) {
                 console.error(err);
-                appendLtMsg('ai', '网络似乎断开了，听不清你说什么...', currentLtRole.avatar || ltRoleAvatar.src);
+                appendLtMsg('ai', '网络似乎断开了，听不清你说什么...');
             } finally {
                 ltBtnSend.disabled = false;
                 ltBtnSend.textContent = '发送';
