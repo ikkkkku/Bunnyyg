@@ -914,7 +914,6 @@
             <div class="lt-btn-collapse" id="btn-close-lt-page">收起</div>
         </div>
 
-        <!-- 顶部：双头像与外侧渐变耳机线 -->
         <div class="lt-top-area">
             <svg class="lt-wires-svg" preserveAspectRatio="none">
                 <defs>
@@ -923,9 +922,7 @@
                         <stop offset="100%" stop-color="var(--theme-pink-dark)" stop-opacity="0"/>
                     </linearGradient>
                 </defs>
-                <!-- 左侧耳机线：从左侧头像外侧垂落并渐变消失 -->
                 <path d="M calc(50% - 65px) 0 Q calc(50% - 80px) 60, calc(50% - 40px) 120" fill="none" stroke="url(#wire-fade)" stroke-width="2"/>
-                <!-- 右侧耳机线：从右侧头像外侧垂落并渐变消失 -->
                 <path d="M calc(50% + 65px) 0 Q calc(50% + 80px) 60, calc(50% + 40px) 120" fill="none" stroke="url(#wire-fade)" stroke-width="2"/>
             </svg>
             <div class="lt-avatars-box">
@@ -941,21 +938,26 @@
             <div class="lt-invite-hint" id="lt-invite-hint">点击左侧头像邀请TA一起听歌 🎧</div>
         </div>
 
-        <!-- 中部：封面与歌名 -->
+        <!-- 中部：3D翻转超大封面与信息 -->
         <div class="lt-middle-area">
-            <div class="lt-cover-wrap">
-                <img src="" id="lt-music-cover">
+            <div class="lt-cover-3d-wrap" id="lt-cover-flipper">
+                <div class="lt-cover-front">
+                    <img src="" id="lt-music-cover">
+                </div>
+                <div class="lt-cover-back">
+                    <div class="lt-lrc-container" id="lt-lrc-container">
+                        <!-- 滚动歌词渲染区 -->
+                    </div>
+                </div>
             </div>
             <div class="lt-song-title" id="lt-music-title">未知歌名</div>
             <div class="lt-song-singer" id="lt-music-singer">未知歌手</div>
         </div>
 
-        <!-- 中下部：固定高度可滑动的聊天区 (无头绪气泡) -->
-        <div class="lt-chat-scroll-area" id="lt-chat-content">
-            <!-- 聊天气泡将在这里生成 -->
-        </div>
+        <!-- 聊天区：无头像无头绪气泡 -->
+        <div class="lt-chat-scroll-area" id="lt-chat-content"></div>
 
-        <!-- 底部：输入框与音乐控制栏 -->
+        <!-- 底部：透明背景、输入框与加大控件 -->
         <div class="lt-bottom-area">
             <div class="lt-input-row">
                 <input type="text" id="lt-msg-input" placeholder="和TA聊聊这首歌...">
@@ -974,7 +976,7 @@
         </div>
     </div>
 
-    <!-- 选择听歌角色的弹窗 (保持不变) -->
+    <!-- 选择听歌角色的弹窗 -->
     <div class="modal-overlay" id="lt-select-role-modal" style="z-index: 2900;">
         <div class="modal-content">
             <div class="modal-header">邀请谁一起听歌？</div>
@@ -982,7 +984,6 @@
             <button class="settings-btn" id="btn-close-lt-role" style="margin-top: 14px; width: 100%; padding: 10px; font-size: 13px;">取消</button>
         </div>
     </div>
-
 <div class="context-menu" id="context-menu">
     <button class="menu-btn" id="menu-url-btn">输入URL</button>
     <button class="menu-btn" id="menu-local-btn">本地文件</button>
@@ -1378,4 +1379,4 @@
 </div>
 <script src="script.js"></script>
 </body>
-                        </html>
+    </html>
