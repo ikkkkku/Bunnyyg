@@ -2112,7 +2112,7 @@ padding: 0;
     }
     .lt-msg-row.ai .lt-bubble { background: #ffffff; border: 1px solid var(--theme-border); border-top-left-radius: 4px; }
     .lt-msg-row.user .lt-bubble { background: #ffe4e8; border: 1px solid var(--theme-border); border-top-right-radius: 4px; }
-    /* --- 绝美重构：一起听歌全屏页面专属样式 --- */
+        /* --- 绝美重构：一起听歌全屏页面专属高级样式 --- */
     #listen-together-page {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         background: linear-gradient(180deg, #fff5f7 0%, #ffeef2 100%);
@@ -2120,67 +2120,81 @@ padding: 0;
     }
     #listen-together-page.active { display: flex; animation: slideUp 0.3s ease forwards; }
     
+    /* 修复：增加顶部安全距离，防止遮挡系统状态栏 */
     .lt-header {
-        padding: 16px; display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0;
-        font-weight: 700; color: var(--theme-text-dark);
+        padding: max(20px, env(safe-area-inset-top) + 10px) 16px 16px 16px; 
+        display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0;
+        font-weight: 700; color: var(--theme-text-dark); font-size: 16px;
     }
     .lt-btn-collapse {
-        position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+        position: absolute; right: 16px; top: max(20px, env(safe-area-inset-top) + 10px); 
         font-size: 13px; color: var(--theme-pink-dark); background: rgba(255,182,193,0.2);
         padding: 4px 12px; border-radius: 16px; cursor: pointer; font-weight: 600;
     }
 
-    /* 顶部双头像与外侧渐变耳机线 */
     .lt-top-area { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; flex-shrink: 0; }
     .lt-avatars-box { display: flex; justify-content: center; gap: 60px; position: relative; z-index: 2; }
     .lt-avatar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
     .lt-avatar-col img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(255,182,193,0.4); z-index: 2; }
     .lt-avatar-name { font-size: 11px; font-weight: 700; color: var(--theme-pink-dark); background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 10px; }
     
-    /* 绝美的外侧渐变消失耳机线 */
     .lt-wires-svg { position: absolute; top: 28px; left: 0; width: 100%; height: 120px; z-index: 1; pointer-events: none; }
-    
     .lt-invite-hint { font-size: 12px; font-weight: 600; color: #cbaeb4; margin-top: 12px; }
 
-    /* 中间封面与信息 */
-    .lt-middle-area { display: flex; flex-direction: column; align-items: center; margin-top: 20px; flex-shrink: 0; }
-    .lt-cover-wrap { width: 140px; height: 140px; border-radius: 50%; padding: 4px; background: linear-gradient(135deg, var(--theme-pink-light), #ffe6ea); box-shadow: 0 8px 24px rgba(255,182,193,0.5); }
-    .lt-cover-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; animation: spin 20s linear infinite; animation-play-state: paused; }
-    .lt-cover-wrap img.playing { animation-play-state: running; }
-    .lt-song-title { font-size: 18px; font-weight: 800; color: var(--theme-text-dark); margin-top: 12px; }
-    .lt-song-singer { font-size: 13px; color: #cbaeb4; font-weight: 600; margin-top: 4px; }
-
-    /* 核心：只显示四条高度、可滑动的无头绪气泡聊天区 */
-    .lt-chat-scroll-area {
-        flex: 1; width: 100%; padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
-        /* 限制高度，使其大概只能显示3-4条消息 */
-        max-height: 220px; margin-top: 10px;
-    }
-    .lt-msg { display: flex; gap: 10px; width: 100%; align-items: flex-start; }
-    .lt-msg.ai { flex-direction: row; }
-    .lt-msg.user { flex-direction: row; justify-content: flex-end; }
-    .lt-msg img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-    /* 无头绪气泡 */
-    .lt-bubble {
-        padding: 8px 14px; font-size: 13px; line-height: 1.5; color: var(--theme-text-dark); font-weight: 500;
-        max-width: 75%; word-break: break-all; box-shadow: 0 2px 8px rgba(255,182,193,0.2);
-        border-radius: 16px !important; /* 强制圆角，去掉小尾巴 */
-    }
-    .lt-msg.ai .lt-bubble { background: #ffffff; border: 1px solid var(--theme-border); }
-    .lt-msg.user .lt-bubble { background: #ffe4e8; border: 1px solid var(--theme-border); }
-
-    /* 底部输入框与控制栏 */
-    .lt-bottom-area { width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,182,193,0.3); padding-bottom: max(16px, env(safe-area-inset-bottom)); flex-shrink: 0; display: flex; flex-direction: column; }
-    .lt-input-row { display: flex; gap: 10px; padding: 12px 16px; align-items: center; }
-    .lt-input-row input { flex: 1; padding: 10px 16px; border-radius: 20px; background: #f5f6fa; border: none; font-size: 13px; }
-    .lt-input-row button { padding: 10px 18px; border-radius: 20px; border: none; background: var(--theme-pink); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(255,158,170,0.4); }
+    /* 修复：超大封面与 3D 翻转歌词背面 */
+    .lt-middle-area { display: flex; flex-direction: column; align-items: center; margin-top: 24px; flex-shrink: 0; perspective: 1000px; }
+    .lt-cover-3d-wrap { width: 240px; height: 240px; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; margin-bottom: 20px; }
+    .lt-cover-3d-wrap.flipped { transform: rotateY(180deg); }
     
-    .lt-controls-row { display: flex; flex-direction: column; padding: 0 20px 10px 20px; }
-    .lt-progress-bar { width: 100%; height: 4px; background: rgba(255,182,193,0.3); border-radius: 2px; position: relative; cursor: pointer; margin-bottom: 16px; }
+    .lt-cover-front, .lt-cover-back { 
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+        border-radius: 50%; overflow: hidden; box-shadow: 0 10px 30px rgba(255,182,193,0.5);
+    }
+    .lt-cover-front { background: linear-gradient(135deg, var(--theme-pink-light), #ffe6ea); padding: 6px; }
+    .lt-cover-front img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; animation: spin 20s linear infinite; animation-play-state: paused; }
+    .lt-cover-front img.playing { animation-play-state: running; }
+    
+    /* 歌词背面 */
+    .lt-cover-back { transform: rotateY(180deg); background: rgba(0,0,0,0.65); backdrop-filter: blur(10px); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .lt-lrc-container { width: 100%; height: 100%; overflow-y: scroll; scroll-behavior: smooth; text-align: center; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); }
+    .lt-lrc-container::-webkit-scrollbar { display: none; }
+    .lt-lrc-line { color: rgba(255,255,255,0.5); font-size: 13px; margin: 12px 0; transition: all 0.3s; line-height: 1.4; }
+    .lt-lrc-line.active { color: #fff; font-size: 16px; font-weight: bold; text-shadow: 0 0 10px rgba(255,255,255,0.6); transform: scale(1.05); }
+
+    /* 修复：加大歌名和歌手 */
+    .lt-song-title { font-size: 24px; font-weight: 800; color: var(--theme-text-dark); margin-top: 8px; text-align: center; padding: 0 20px; }
+    .lt-song-singer { font-size: 15px; color: #cbaeb4; font-weight: 600; margin-top: 6px; text-align: center; }
+
+    /* 聊天区：无头像，气泡 */
+    .lt-chat-scroll-area {
+        flex: 1; width: 100%; padding: 10px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+        max-height: 200px; margin-top: 10px;
+    }
+    .lt-msg { display: flex; width: 100%; align-items: flex-start; }
+    .lt-msg.ai { justify-content: flex-start; }
+    .lt-msg.user { justify-content: flex-end; }
+    .lt-bubble {
+        padding: 10px 16px; font-size: 14px; line-height: 1.5; color: var(--theme-text-dark); font-weight: 500;
+        max-width: 80%; word-break: break-all; box-shadow: 0 4px 12px rgba(255,182,193,0.15);
+        border-radius: 20px !important; /* 彻底圆角，无头绪 */
+    }
+    .lt-msg.ai .lt-bubble { background: #ffffff; border: 1px solid rgba(255,182,193,0.3); }
+    .lt-msg.user .lt-bubble { background: #ffe4e8; border: 1px solid rgba(255,182,193,0.3); }
+
+    /* 修复：底部全透明、控件下移且加大 */
+    .lt-bottom-area { width: 100%; background: transparent; padding-bottom: max(30px, env(safe-area-inset-bottom) + 20px); flex-shrink: 0; display: flex; flex-direction: column; margin-top: auto; }
+    .lt-input-row { display: flex; gap: 12px; padding: 10px 20px; align-items: center; }
+    .lt-input-row input { flex: 1; padding: 12px 20px; border-radius: 24px; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,182,193,0.4); font-size: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+    .lt-input-row button { padding: 12px 20px; border-radius: 24px; border: none; background: var(--theme-pink); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(255,158,170,0.4); }
+    
+    .lt-controls-row { display: flex; flex-direction: column; padding: 0 24px; margin-top: 20px; }
+    .lt-progress-bar { width: 100%; height: 4px; background: rgba(255,182,193,0.4); border-radius: 2px; position: relative; cursor: pointer; margin-bottom: 24px; }
     .lt-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--theme-pink-dark); border-radius: 2px; width: 0%; pointer-events: none; }
-    .lt-progress-fill::after { content: ''; position: absolute; right: -4px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; background: #fff; border: 2px solid var(--theme-pink-dark); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    .lt-btns { display: flex; justify-content: center; align-items: center; gap: 30px; }
-    .lt-btn-icon { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; color: var(--theme-pink-dark); cursor: pointer; }
-    .lt-btn-icon svg { width: 24px; height: 24px; fill: currentColor; }
-    .lt-btn-play { width: 50px; height: 50px; background: var(--theme-pink-dark); color: #fff; border-radius: 50%; box-shadow: 0 4px 12px rgba(255,182,193,0.6); }
-    .lt-btn-play svg { width: 28px; height: 28px; }
+    .lt-progress-fill::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: #fff; border: 3px solid var(--theme-pink-dark); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    
+    .lt-btns { display: flex; justify-content: center; align-items: center; gap: 40px; }
+    .lt-btn-icon { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; color: var(--theme-pink-dark); cursor: pointer; transition: transform 0.1s; }
+    .lt-btn-icon:active { transform: scale(0.9); }
+    .lt-btn-icon svg { width: 32px; height: 32px; fill: currentColor; }
+    .lt-btn-play { width: 66px; height: 66px; background: var(--theme-pink-dark); color: #fff; border-radius: 50%; box-shadow: 0 6px 16px rgba(255,182,193,0.6); }
+    .lt-btn-play svg { width: 38px; height: 38px; }
