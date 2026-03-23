@@ -5006,7 +5006,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 修复：增加 forceReplay 参数，解决切歌变暂停的Bug
+        // 修复：增加 forceReplay 参数，解决切歌变成暂停的恶性 Bug
         async function playMusicById(id, forceReplay = false) {
             const music = await bunnyDB.music.get(parseInt(id));
             if (music) {
@@ -5025,6 +5025,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 globalAudio.play();
                 
                 const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
+                const dockCover = document.getElementById('dock-music-cover');
                 if(dockCover) dockCover.src = coverSrc;
                 const titleEl = document.getElementById('dock-music-title');
                 const singerEl = document.getElementById('dock-music-singer');
@@ -5034,7 +5035,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         document.getElementById('btn-dock-prev')?.addEventListener('click', (e) => {
-            e.stopPropagation(); // 修复：阻止冒泡
+            e.stopPropagation(); // 修复：阻止冒泡触发页面展开
             if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
             let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
             index = (index - 1 + globalMusicList.length) % globalMusicList.length;
@@ -5050,6 +5051,66 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         document.getElementById('btn-dock-next')?.addEventListener('click', playNextMusic);
 
+        // --- 核心修复：点击播放栏左侧（头像、歌名）展开带有输入框的详情页面 ---
+        const dockLeft = document.querySelector('.music-dock-left');
+        if (dockLeft) {
+            dockLeft.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (!currentPlayingMusicId) return; // 如果没有播放音乐则不展开
+                
+                // 获取当前正在播放的音乐数据
+                const music = await bunnyDB.music.get(parseInt(currentPlayingMusicId));
+                if (music) {
+                    const musicModalTitle = document.getElementById('music-modal-title');
+                    const musicEditId = document.getElementById('music-edit-id');
+                    const musicTitleInput = document.getElementById('music-title-input');
+                    const musicSingerInput = document.getElementById('music-singer-input');
+                    const musicCoverTrigger = document.getElementById('music-cover-trigger');
+                    const btnUploadAudio = document.getElementById('btn-upload-audio');
+                    const musicUrlInput = document.getElementById('music-url-input');
+                    const btnUploadLrc = document.getElementById('btn-upload-lrc');
+                    const btnDelMusic = document.getElementById('btn-del-music');
+                    const musicEditModal = document.getElementById('music-edit-modal');
+
+                    // 完美契合您的要求：上方显示“正在播放”
+                    if (musicModalTitle) musicModalTitle.textContent = '正在播放'; 
+                    if (musicEditId) musicEditId.value = music.id;
+                    if (musicTitleInput) musicTitleInput.value = music.title;
+                    if (musicSingerInput) musicSingerInput.value = music.singer;
+                    
+                    // 大圆形封面回显
+                    if (musicCoverTrigger) {
+                        if (music.cover) {
+                            musicCoverTrigger.style.backgroundImage = `url('${music.cover}')`;
+                            musicCoverTrigger.classList.add('has-img');
+                            currentMusicCoverBase64 = music.cover;
+                        } else {
+                            musicCoverTrigger.style.backgroundImage = '';
+                            musicCoverTrigger.classList.remove('has-img');
+                            currentMusicCoverBase64 = '';
+                        }
+                    }
+
+                    // 音源回显
+                    if (btnUploadAudio) {
+                        if (music.audio && music.audio.startsWith('data:')) {
+                            btnUploadAudio.textContent = '已上传音源';
+                            btnUploadAudio.classList.add('has-file');
+                            if(musicUrlInput) musicUrlInput.value = '';
+                        } else {
+                            btnUploadAudio.textContent = '上传本地音源';
+                            btnUploadAudio.classList.remove('has-file');
+                            if(musicUrlInput) musicUrlInput.value = music.audio || '';
+                        }
+                    }
+
+                    if (btnDelMusic) btnDelMusic.style.display = 'block';
+                    
+                    // 展开页面
+                    if (musicEditModal) musicEditModal.classList.add('active');
+                }
+            });
+        }
         // --- 核心修复：恢复点击播放栏左侧（头像、歌名）展开页面的功能 ---
         const dockLeft = document.querySelector('.music-dock-left');
         if (dockLeft) {
