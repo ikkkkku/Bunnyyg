@@ -1,4 +1,4 @@
-   function updateTime() {
+    function updateTime() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -4854,72 +4854,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const dockCover = document.getElementById('dock-music-cover');
         const progressFill = document.getElementById('music-progress-fill');
         const progressContainer = document.getElementById('music-progress-container');
-        // --- 新增：歌词解析与渲染逻辑 ---
-        let parsedLrc = [];
-        let currentLrcIndex = -1;
-        function parseLrc(lrcStr) {
-            const lines = lrcStr.split('\n');
-            const result = [];
-            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-            for (let line of lines) {
-                const match = timeReg.exec(line);
-                if (match) {
-                    const min = parseInt(match[1]);
-                    const sec = parseInt(match[2]);
-                    const ms = match[3].length === 2 ? parseInt(match[3]) * 10 : parseInt(match[3]);
-                    const time = min * 60 + sec + ms / 1000;
-                    const text = line.replace(timeReg, '').trim();
-                    if (text) {
-                        result.push({ time, text });
-                    }
-                }
-            }
-            return result;
-        }
 
-        function renderLrc(lrcData) {
-            const container = document.getElementById('lrc-container');
-            if (!container) return;
-            container.innerHTML = '';
-            if (!lrcData || lrcData.length === 0) {
-                container.innerHTML = '<div class="lrc-line">暂无歌词</div>';
-                return;
-            }
-            lrcData.forEach((item, index) => {
-                const el = document.createElement('div');
-                el.className = 'lrc-line';
-                el.id = 'lrc-line-' + index;
-                el.textContent = item.text;
-                container.appendChild(el);
-            });
-        }
-        
-        const dockCoverContainer = document.getElementById('dock-cover-container');
-        const dockCoverFlipper = document.getElementById('dock-cover-flipper');
-        const lrcOverlay = document.getElementById('lrc-overlay');
-
-        if (dockCoverContainer) {
-            dockCoverContainer.addEventListener('click', () => {
-                const isFlipped = dockCoverFlipper.classList.contains('flipped');
-                if (isFlipped) {
-                    dockCoverFlipper.classList.remove('flipped');
-                    if(lrcOverlay) lrcOverlay.classList.remove('active');
-                } else {
-                    dockCoverFlipper.classList.add('flipped');
-                    if(lrcOverlay) lrcOverlay.classList.add('active');
-                    if (currentLrcIndex >= 0) {
-                        setTimeout(() => {
-                            const newLine = document.getElementById('lrc-line-' + currentLrcIndex);
-                            if (newLine) {
-                                const container = document.getElementById('lrc-container');
-                                const offset = newLine.offsetTop - container.clientHeight / 2 + newLine.clientHeight / 2;
-                                container.scrollTo({ top: offset, behavior: 'smooth' });
-                            }
-                        }, 300);
-                    }
-                }
-            });
-        }
         globalAudio.addEventListener('play', () => {
             if(playIcon) playIcon.innerHTML = '<use href="#ic-pause"/>';
             if(dockCover) dockCover.classList.add('playing');
@@ -4935,29 +4870,6 @@ window.addEventListener('DOMContentLoaded', () => {
             if (globalAudio.duration && progressFill && !window.isDraggingProgress) {
                 const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
                 progressFill.style.width = percent + '%';
-            }
-            // --- 新增：歌词滚动与高亮逻辑 ---
-            if (parsedLrc.length > 0) {
-                const currentTime = globalAudio.currentTime;
-                let activeIndex = parsedLrc.findIndex(l => l.time > currentTime) - 1;
-                if (activeIndex === -2) activeIndex = parsedLrc.length - 1;
-                if (activeIndex < 0) activeIndex = 0;
-
-                if (activeIndex !== currentLrcIndex) {
-                    const oldLine = document.getElementById('lrc-line-' + currentLrcIndex);
-                    if (oldLine) oldLine.classList.remove('active');
-                    
-                    const newLine = document.getElementById('lrc-line-' + activeIndex);
-                    if (newLine) {
-                        newLine.classList.add('active');
-                        const container = document.getElementById('lrc-container');
-                        if (container && lrcOverlay && lrcOverlay.classList.contains('active')) {
-                            const offset = newLine.offsetTop - container.clientHeight / 2 + newLine.clientHeight / 2;
-                            container.scrollTo({ top: offset, behavior: 'smooth' });
-                        }
-                    }
-                    currentLrcIndex = activeIndex;
-                }
             }
         });
         globalAudio.addEventListener('ended', playNextMusic);
@@ -5044,18 +4956,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 const singerEl = document.getElementById('dock-music-singer');
                 if(titleEl) titleEl.textContent = music.title;
                 if(singerEl) singerEl.textContent = music.singer;
-                
-                // --- 新增：解析新歌曲的歌词 ---
-                if (music.lrc) {
-                    parsedLrc = parseLrc(music.lrc);
-                } else {
-                    parsedLrc = [];
-                }
-                renderLrc(parsedLrc);
-                currentLrcIndex = -1;
             }
         }
-document.getElementById('btn-dock-prev')?.addEventListener('click', () => {
+
+        document.getElementById('btn-dock-prev')?.addEventListener('click', () => {
             if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
             let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
             index = (index - 1 + globalMusicList.length) % globalMusicList.length;
