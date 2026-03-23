@@ -2121,6 +2121,16 @@ padding: 0;
     }
     #listen-together-page.active { display: flex; animation: slideUp 0.3s ease forwards; }
     
+    /* --- 绝美重构：一起听歌全屏页面专属高级样式 --- */
+    #listen-together-page {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        /* 极浅、极通透的樱花粉向下渐变到纯白，绝不刺眼 */
+        background: linear-gradient(180deg, #fff0f5 0%, #ffffff 100%);
+        z-index: 2800; display: none; flex-direction: column; overflow: hidden;
+    }
+    #listen-together-page.active { display: flex; animation: slideUp 0.3s ease forwards; }
+    
+    /* 极简导航栏（去油腻背景和阴影，防遮挡状态栏） */
     .lt-header {
         margin-top: max(40px, env(safe-area-inset-top)); 
         padding: 0 16px 16px 16px; 
@@ -2129,8 +2139,8 @@ padding: 0;
     }
     .lt-btn-collapse {
         position: absolute; right: 16px; top: -4px; 
-        font-size: 13px; color: var(--theme-pink-dark); background: rgba(255,255,255,0.6);
-        padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 8px rgba(255,182,193,0.3);
+        font-size: 14px; color: var(--theme-pink-dark); background: transparent; 
+        padding: 6px 10px; cursor: pointer; font-weight: 600; border-radius: 16px;
     }
 
     .lt-top-area { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; flex-shrink: 0; }
@@ -2139,6 +2149,7 @@ padding: 0;
     .lt-avatar-col img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(255,182,193,0.4); z-index: 2; }
     .lt-avatar-name { font-size: 11px; font-weight: 700; color: var(--theme-pink-dark); background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 10px; }
     
+    /* 精美弧线耳机线，向下渐变消失 */
     .lt-wires-svg { 
         position: absolute; top: 28px; left: 50%; transform: translateX(-50%); 
         width: 300px; height: 150px; z-index: 1; pointer-events: none; 
@@ -2147,6 +2158,7 @@ padding: 0;
     }
     .lt-invite-hint { font-size: 12px; font-weight: 600; color: var(--theme-pink-dark); margin-top: 12px; opacity: 0.8; }
 
+    /* 超大封面与 3D 悬浮透明歌词 */
     .lt-middle-area { display: flex; flex-direction: column; align-items: center; margin-top: 24px; flex-shrink: 0; perspective: 1000px; }
     .lt-cover-3d-wrap { width: 260px; height: 260px; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; margin-bottom: 20px; }
     .lt-cover-3d-wrap.flipped { transform: rotateY(180deg); }
@@ -2172,6 +2184,7 @@ padding: 0;
     .lt-song-title { font-size: 26px; font-weight: 800; color: var(--theme-text-dark); margin-top: 8px; text-align: center; padding: 0 20px; }
     .lt-song-singer { font-size: 16px; color: var(--theme-pink-dark); font-weight: 600; margin-top: 6px; text-align: center; opacity: 0.8; }
 
+    /* 气泡极简扁平化（去掉毛玻璃和边框，使用纯净实色，压扁高度） */
     .lt-chat-scroll-area {
         flex: 1; width: 100%; padding: 10px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
         max-height: 200px; margin-top: 10px;
@@ -2180,21 +2193,53 @@ padding: 0;
     .lt-msg.ai { justify-content: flex-start; }
     .lt-msg.user { justify-content: flex-end; }
     .lt-bubble {
-        padding: 12px 18px; font-size: 14px; line-height: 1.5; color: var(--theme-text-dark); font-weight: 600;
-        max-width: 85%; word-break: break-all; box-shadow: 0 4px 16px rgba(255,182,193,0.2);
-        border-radius: 20px !important; 
+        padding: 8px 14px; 
+        font-size: 14px; line-height: 1.4; color: var(--theme-text-dark); font-weight: 500;
+        max-width: 85%; word-break: break-all; 
+        box-shadow: 0 1px 6px rgba(0,0,0,0.04); 
+        border-radius: 16px !important; 
     }
-    .lt-msg.ai .lt-bubble { background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.6); }
-    .lt-msg.user .lt-bubble { background: rgba(255,228,232,0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.6); }
+    .lt-msg.ai .lt-bubble { background: #ffffff; border: none; }
+    .lt-msg.user .lt-bubble { background: #ffeef2; border: none; }
 
+    /* 底部完全透明 */
     .lt-bottom-area { width: 100%; background: transparent; padding-bottom: max(40px, env(safe-area-inset-bottom) + 20px); flex-shrink: 0; display: flex; flex-direction: column; margin-top: auto; border: none; }
     
-    /* 修复：恢复小巧精致的输入框和发送按钮 */
-    .lt-input-row { display: flex; gap: 10px; padding: 10px 24px; align-items: center; margin-bottom: 4px; }
-    .lt-input-row input { flex: 1; padding: 10px 16px; border-radius: 20px; background: rgba(255,255,255,0.6); backdrop-filter: blur(5px); border: 1px solid rgba(255,182,193,0.4); font-size: 13px; font-weight: 600; color: var(--theme-text-dark); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-    .lt-input-row input::placeholder { color: #cbaeb4; font-weight: 500; }
-    .lt-input-row button { padding: 10px 18px; border-radius: 20px; border: none; background: var(--theme-pink); color: #fff; font-weight: bold; font-size: 13px; box-shadow: 0 4px 12px rgba(255,158,170,0.5); }
+    /* 输入栏极简扁平化（彻底去掉粉色边框和内阴影，压扁高度） */
+    .lt-input-row { display: flex; gap: 10px; padding: 6px 24px; align-items: center; margin-bottom: 12px; }
+    .lt-input-row input { 
+        flex: 1; padding: 10px 16px; 
+        border-radius: 18px; 
+        background: rgba(255,255,255,0.85); 
+        border: none; 
+        font-size: 14px; font-weight: 500; color: var(--theme-text-dark); 
+        box-shadow: none; 
+    }
+    .lt-input-row input::placeholder { color: #bba0a5; font-weight: 400; }
+    .lt-input-row button { 
+        padding: 10px 18px; 
+        border-radius: 18px; border: none; 
+        background: var(--theme-pink-dark); 
+        color: #fff; font-weight: 600; font-size: 13px; 
+        box-shadow: none; 
+    }
     
+    /* 控件下移且额外加大 */
+    .lt-controls-row { display: flex; flex-direction: column; padding: 0 30px; margin-top: 10px; }
+    .lt-progress-bar { width: 100%; height: 5px; background: rgba(255,182,193,0.5); border-radius: 3px; position: relative; cursor: pointer; margin-bottom: 30px; }
+    .lt-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--theme-pink-dark); border-radius: 3px; width: 0%; pointer-events: none; }
+    .lt-progress-fill::after { content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border: 3px solid var(--theme-pink-dark); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+    
+    .lt-btns { display: flex; justify-content: center; align-items: center; gap: 45px; }
+    .lt-btn-icon { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; color: var(--theme-pink-dark); cursor: pointer; transition: transform 0.1s; }
+    .lt-btn-icon:active { transform: scale(0.9); }
+    .lt-btn-icon svg { width: 36px; height: 36px; fill: currentColor; }
+    .lt-btn-play { width: 72px; height: 72px; background: var(--theme-pink-dark); color: #fff; border-radius: 50%; box-shadow: 0 8px 24px rgba(255,182,193,0.7); }
+    .lt-btn-play svg { width: 42px; height: 42px; }
+
+    /* 修复底层音乐播放栏蒙版 Bug */
+    .music-dock { overflow: visible !important; border-radius: 0 !important; }
+
     .lt-controls-row { display: flex; flex-direction: column; padding: 0 30px; margin-top: 10px; }
     .lt-progress-bar { width: 100%; height: 5px; background: rgba(255,182,193,0.5); border-radius: 3px; position: relative; cursor: pointer; margin-bottom: 30px; }
     .lt-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--theme-pink-dark); border-radius: 3px; width: 0%; pointer-events: none; }
