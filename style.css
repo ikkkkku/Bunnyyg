@@ -2115,21 +2115,23 @@ padding: 0;
         /* --- 绝美重构：一起听歌全屏页面专属高级样式 --- */
     #listen-together-page {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(180deg, #fff5f7 0%, #ffeef2 100%);
+        /* 6. 上粉下白渐变背景 */
+        background: linear-gradient(180deg, #ffc0cb 0%, #ffffff 100%);
         z-index: 2800; display: none; flex-direction: column; overflow: hidden;
     }
     #listen-together-page.active { display: flex; animation: slideUp 0.3s ease forwards; }
     
-    /* 修复：增加顶部安全距离，防止遮挡系统状态栏 */
+    /* 2. 修复顶部严重遮挡状态栏，强制下移 */
     .lt-header {
-        padding: max(20px, env(safe-area-inset-top) + 10px) 16px 16px 16px; 
+        margin-top: max(40px, env(safe-area-inset-top)); 
+        padding: 0 16px 16px 16px; 
         display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0;
         font-weight: 700; color: var(--theme-text-dark); font-size: 16px;
     }
     .lt-btn-collapse {
-        position: absolute; right: 16px; top: max(20px, env(safe-area-inset-top) + 10px); 
-        font-size: 13px; color: var(--theme-pink-dark); background: rgba(255,182,193,0.2);
-        padding: 4px 12px; border-radius: 16px; cursor: pointer; font-weight: 600;
+        position: absolute; right: 16px; top: -4px; 
+        font-size: 13px; color: var(--theme-pink-dark); background: rgba(255,255,255,0.6);
+        padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 8px rgba(255,182,193,0.3);
     }
 
     .lt-top-area { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; flex-shrink: 0; }
@@ -2138,63 +2140,78 @@ padding: 0;
     .lt-avatar-col img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(255,182,193,0.4); z-index: 2; }
     .lt-avatar-name { font-size: 11px; font-weight: 700; color: var(--theme-pink-dark); background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 10px; }
     
-    .lt-wires-svg { position: absolute; top: 28px; left: 0; width: 100%; height: 120px; z-index: 1; pointer-events: none; }
-    .lt-invite-hint { font-size: 12px; font-weight: 600; color: #cbaeb4; margin-top: 12px; }
+    /* 4. 修复耳机线：精美弧线，向下渐变消失 */
+    .lt-wires-svg { 
+        position: absolute; top: 28px; left: 50%; transform: translateX(-50%); 
+        width: 300px; height: 150px; z-index: 1; pointer-events: none; 
+        mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+    }
+    .lt-invite-hint { font-size: 12px; font-weight: 600; color: var(--theme-pink-dark); margin-top: 12px; opacity: 0.8; }
 
-    /* 修复：超大封面与 3D 翻转歌词背面 */
+    /* 1 & 5. 超大封面与 3D 悬浮透明歌词 */
     .lt-middle-area { display: flex; flex-direction: column; align-items: center; margin-top: 24px; flex-shrink: 0; perspective: 1000px; }
-    .lt-cover-3d-wrap { width: 240px; height: 240px; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; margin-bottom: 20px; }
+    .lt-cover-3d-wrap { width: 260px; height: 260px; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; margin-bottom: 20px; }
     .lt-cover-3d-wrap.flipped { transform: rotateY(180deg); }
     
-    .lt-cover-front, .lt-cover-back { 
+    .lt-cover-front { 
         position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
-        border-radius: 50%; overflow: hidden; box-shadow: 0 10px 30px rgba(255,182,193,0.5);
+        border-radius: 50%; overflow: hidden; box-shadow: 0 10px 40px rgba(255,182,193,0.6);
+        background: linear-gradient(135deg, var(--theme-pink-light), #ffe6ea); padding: 6px; 
     }
-    .lt-cover-front { background: linear-gradient(135deg, var(--theme-pink-light), #ffe6ea); padding: 6px; }
     .lt-cover-front img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; animation: spin 20s linear infinite; animation-play-state: paused; }
     .lt-cover-front img.playing { animation-play-state: running; }
     
-    /* 歌词背面 */
-    .lt-cover-back { transform: rotateY(180deg); background: rgba(0,0,0,0.65); backdrop-filter: blur(10px); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .lt-lrc-container { width: 100%; height: 100%; overflow-y: scroll; scroll-behavior: smooth; text-align: center; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); }
+    /* 5. 翻转后没有黑色丑陋圆形，只有文字悬浮 */
+    .lt-cover-back { 
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+        transform: rotateY(180deg); background: transparent; /* 完全透明，无圆角限制 */
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    }
+    .lt-lrc-container { width: 120%; height: 100%; overflow-y: scroll; scroll-behavior: smooth; text-align: center; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); padding: 20px 0; }
     .lt-lrc-container::-webkit-scrollbar { display: none; }
-    .lt-lrc-line { color: rgba(255,255,255,0.5); font-size: 13px; margin: 12px 0; transition: all 0.3s; line-height: 1.4; }
-    .lt-lrc-line.active { color: #fff; font-size: 16px; font-weight: bold; text-shadow: 0 0 10px rgba(255,255,255,0.6); transform: scale(1.05); }
+    .lt-lrc-line { color: rgba(0,0,0,0.3); font-size: 14px; margin: 16px 0; transition: all 0.3s; line-height: 1.5; font-weight: 600; }
+    .lt-lrc-line.active { color: var(--theme-pink-dark); font-size: 18px; font-weight: 800; text-shadow: 0 2px 8px rgba(255,255,255,0.8); transform: scale(1.05); }
 
-    /* 修复：加大歌名和歌手 */
-    .lt-song-title { font-size: 24px; font-weight: 800; color: var(--theme-text-dark); margin-top: 8px; text-align: center; padding: 0 20px; }
-    .lt-song-singer { font-size: 15px; color: #cbaeb4; font-weight: 600; margin-top: 6px; text-align: center; }
+    .lt-song-title { font-size: 26px; font-weight: 800; color: var(--theme-text-dark); margin-top: 8px; text-align: center; padding: 0 20px; }
+    .lt-song-singer { font-size: 16px; color: var(--theme-pink-dark); font-weight: 600; margin-top: 6px; text-align: center; opacity: 0.8; }
 
-    /* 聊天区：无头像，气泡 */
+    /* 2. 聊天区：无头像，纯净气泡 */
     .lt-chat-scroll-area {
-        flex: 1; width: 100%; padding: 10px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+        flex: 1; width: 100%; padding: 10px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
         max-height: 200px; margin-top: 10px;
     }
     .lt-msg { display: flex; width: 100%; align-items: flex-start; }
     .lt-msg.ai { justify-content: flex-start; }
     .lt-msg.user { justify-content: flex-end; }
     .lt-bubble {
-        padding: 10px 16px; font-size: 14px; line-height: 1.5; color: var(--theme-text-dark); font-weight: 500;
-        max-width: 80%; word-break: break-all; box-shadow: 0 4px 12px rgba(255,182,193,0.15);
+        padding: 12px 18px; font-size: 14px; line-height: 1.5; color: var(--theme-text-dark); font-weight: 600;
+        max-width: 85%; word-break: break-all; box-shadow: 0 4px 16px rgba(255,182,193,0.2);
         border-radius: 20px !important; /* 彻底圆角，无头绪 */
     }
-    .lt-msg.ai .lt-bubble { background: #ffffff; border: 1px solid rgba(255,182,193,0.3); }
-    .lt-msg.user .lt-bubble { background: #ffe4e8; border: 1px solid rgba(255,182,193,0.3); }
+    .lt-msg.ai .lt-bubble { background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.6); }
+    .lt-msg.user .lt-bubble { background: rgba(255,228,232,0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.6); }
 
-    /* 修复：底部全透明、控件下移且加大 */
-    .lt-bottom-area { width: 100%; background: transparent; padding-bottom: max(30px, env(safe-area-inset-bottom) + 20px); flex-shrink: 0; display: flex; flex-direction: column; margin-top: auto; }
-    .lt-input-row { display: flex; gap: 12px; padding: 10px 20px; align-items: center; }
-    .lt-input-row input { flex: 1; padding: 12px 20px; border-radius: 24px; background: rgba(255,255,255,0.7); border: 1px solid rgba(255,182,193,0.4); font-size: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-    .lt-input-row button { padding: 12px 20px; border-radius: 24px; border: none; background: var(--theme-pink); color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(255,158,170,0.4); }
+    /* 3 & 4. 底部完全透明、控件下移且额外加大 */
+    .lt-bottom-area { width: 100%; background: transparent; padding-bottom: max(40px, env(safe-area-inset-bottom) + 20px); flex-shrink: 0; display: flex; flex-direction: column; margin-top: auto; border: none; }
+    .lt-input-row { display: flex; gap: 12px; padding: 10px 24px; align-items: center; margin-bottom: 10px; }
+    .lt-input-row input { flex: 1; padding: 14px 20px; border-radius: 24px; background: rgba(255,255,255,0.6); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.8); font-size: 14px; font-weight: 600; color: var(--theme-text-dark); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .lt-input-row input::placeholder { color: #cbaeb4; font-weight: 500; }
+    .lt-input-row button { padding: 14px 24px; border-radius: 24px; border: none; background: var(--theme-pink); color: #fff; font-weight: bold; font-size: 14px; box-shadow: 0 4px 16px rgba(255,158,170,0.5); }
     
-    .lt-controls-row { display: flex; flex-direction: column; padding: 0 24px; margin-top: 20px; }
-    .lt-progress-bar { width: 100%; height: 4px; background: rgba(255,182,193,0.4); border-radius: 2px; position: relative; cursor: pointer; margin-bottom: 24px; }
-    .lt-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--theme-pink-dark); border-radius: 2px; width: 0%; pointer-events: none; }
-    .lt-progress-fill::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: #fff; border: 3px solid var(--theme-pink-dark); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    .lt-controls-row { display: flex; flex-direction: column; padding: 0 30px; margin-top: 10px; }
+    .lt-progress-bar { width: 100%; height: 5px; background: rgba(255,182,193,0.5); border-radius: 3px; position: relative; cursor: pointer; margin-bottom: 30px; }
+    .lt-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--theme-pink-dark); border-radius: 3px; width: 0%; pointer-events: none; }
+    .lt-progress-fill::after { content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border: 3px solid var(--theme-pink-dark); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
     
-    .lt-btns { display: flex; justify-content: center; align-items: center; gap: 40px; }
+    /* 额外加大三个按键 */
+    .lt-btns { display: flex; justify-content: center; align-items: center; gap: 45px; }
     .lt-btn-icon { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; color: var(--theme-pink-dark); cursor: pointer; transition: transform 0.1s; }
     .lt-btn-icon:active { transform: scale(0.9); }
-    .lt-btn-icon svg { width: 32px; height: 32px; fill: currentColor; }
-    .lt-btn-play { width: 66px; height: 66px; background: var(--theme-pink-dark); color: #fff; border-radius: 50%; box-shadow: 0 6px 16px rgba(255,182,193,0.6); }
-    .lt-btn-play svg { width: 38px; height: 38px; }
+    .lt-btn-icon svg { width: 36px; height: 36px; fill: currentColor; }
+    .lt-btn-play { width: 72px; height: 72px; background: var(--theme-pink-dark); color: #fff; border-radius: 50%; box-shadow: 0 8px 24px rgba(255,182,193,0.7); }
+    .lt-btn-play svg { width: 42px; height: 42px; }
+
+    /* 1. 修复底层音乐播放栏蒙版 Bug */
+    .music-dock { overflow: visible !important; border-radius: 0 !important; }
+
