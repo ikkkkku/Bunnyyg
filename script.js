@@ -5320,6 +5320,7 @@ ${currentLtRole.userName}：${text}
                 replyText = replyText.replace(/[\s\S]*?<\/think>/gi, '').trim();
                 replyText = replyText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
+                // --- 解析 AI 返回的数据 ---
                 let parsedMsgs = [];
                 try {
                     parsedMsgs = JSON.parse(replyText);
@@ -5328,12 +5329,53 @@ ${currentLtRole.userName}：${text}
                     parsedMsgs = [{"type": "text", "content": replyText}];
                 }
 
+                // === 新增：强力双重防复读清洗算法 ===
+                
+                // 1. 数组去重：防止 AI 输出多条完全一样的气泡
+                const uniqueMsgs = [];
+                parsedMsgs.forEach(msg => {
+                    if (!msg.content) return;
+                    const isDuplicate = uniqueMsgs.some(existing => existing.content === msg.content);
+                    if (!isDuplicate) uniqueMsgs.push(msg);
+                });
+                parsedMsgs = uniqueMsgs;
+
+                // 2. 文本内部分半去重：防止 AI 在一个气泡里输出 "好\n我知道了\n好\n我知道了"
+                parsedMsgs.forEach(msg => {
+                    if (msg.type === 'text' || !msg.type) {
+                        let text = (msg.content || '').trim();
+                        if (text.length > 4) {
+                            // 策略 A：按换行符对半切开对比
+                            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+                            if (lines.length > 1 && lines.length % 2 === 0) {
+                                const half = lines.length / 2;
+                                const firstHalf = lines.slice(0, half).join('\n');
+                                const secondHalf = lines.slice(half).join('\n');
+                                if (firstHalf === secondHalf) {
+                                    msg.content = firstHalf;
+                                    text = firstHalf;
+                                }
+                            }
+                            // 策略 B：无视换行符直接从中间切开对比 (防止连体复读)
+                            const mid = Math.floor(text.length / 2);
+                            const p1 = text.substring(0, mid).trim();
+                            const p2 = text.substring(mid).trim();
+                            if (p1.length > 2 && p1 === p2) {
+                                msg.content = p1;
+                            }
+                        }
+                    }
+                });
+                // ====================================
+
+                // 记录用户触发的消息到主聊天数据库
                 const now = Date.now();
                 await bunnyDB.chatHistory.put({
                     roleId: currentLtRole.id, role: 'user',
                     content: `[一起听歌《${music.title}》时说]：${text}`, timestamp: now
                 });
 
+                // 逐条渲染清洗后的 AI 消息
                 for (let i = 0; i < parsedMsgs.length; i++) {
                     const msg = parsedMsgs[i];
                     if (!msg.content) continue;
@@ -5345,6 +5387,7 @@ ${currentLtRole.userName}：${text}
                         content: msg.content, timestamp: now + (i+1)*1000
                     });
 
+                    // 触发切歌彩蛋
                     if (msg.type === 'skip_song') {
                         setTimeout(() => {
                             if(ltBtnNext) ltBtnNext.click(); 
@@ -5352,10 +5395,12 @@ ${currentLtRole.userName}：${text}
                         }, 1500); 
                     }
 
+                    // 多条消息间的停顿感
                     if (i < parsedMsgs.length - 1) {
                         await new Promise(r => setTimeout(r, 1000));
                     }
                 }
+
 
             } catch (err) {
                 console.error(err);
