@@ -4999,14 +4999,14 @@ window.addEventListener('DOMContentLoaded', () => {
         const btnDockPlay = document.getElementById('btn-dock-play');
         if (btnDockPlay) {
             btnDockPlay.addEventListener('click', (e) => {
-                e.stopPropagation(); // 修复：阻止点击播放键时冒泡触发页面展开
+                e.stopPropagation(); // 阻止冒泡触发弹窗
                 if (!globalAudio.src) return;
                 if (globalAudio.paused) globalAudio.play();
                 else globalAudio.pause();
             });
         }
 
-        // 修复：增加 forceReplay 参数，解决切歌变成暂停的恶性 Bug
+        // 修复：增加 forceReplay 参数，解决切歌变成暂停的 Bug
         async function playMusicById(id, forceReplay = false) {
             const music = await bunnyDB.music.get(parseInt(id));
             if (music) {
@@ -5035,21 +5035,216 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         document.getElementById('btn-dock-prev')?.addEventListener('click', (e) => {
-            e.stopPropagation(); // 修复：阻止冒泡触发页面展开
+            e.stopPropagation(); // 阻止冒泡
             if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
             let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
             index = (index - 1 + globalMusicList.length) % globalMusicList.length;
-            playMusicById(globalMusicList[index].id, true); // 强制重播
+            playMusicById(globalMusicList[index].id, true);
         });
 
         function playNextMusic(e) {
-            if (e && e.stopPropagation) e.stopPropagation(); // 修复：阻止冒泡
+            if (e && e.stopPropagation) e.stopPropagation(); // 阻止冒泡
             if (globalMusicList.length === 0 || !currentPlayingMusicId) return;
             let index = globalMusicList.findIndex(m => m.id === currentPlayingMusicId);
             index = (index + 1) % globalMusicList.length;
-            playMusicById(globalMusicList[index].id, true); // 强制重播
+            playMusicById(globalMusicList[index].id, true);
         }
         document.getElementById('btn-dock-next')?.addEventListener('click', playNextMusic);
+
+        // === 绝美恢复与强化：一起听歌功能核心逻辑 ===
+        let currentLtRole = null; 
+        const listenTogetherModal = document.getElementById('listen-together-modal');
+        const ltMusicCover = document.getElementById('lt-music-cover');
+        const ltMusicTitle = document.getElementById('lt-music-title');
+        const ltMusicSinger = document.getElementById('lt-music-singer');
+        const ltRoleAvatar = document.getElementById('lt-role-avatar');
+        const ltRoleName = document.getElementById('lt-role-name');
+        const ltUserAvatar = document.getElementById('lt-user-avatar');
+        const ltUserName = document.getElementById('lt-user-name');
+        const ltChatContent = document.getElementById('lt-chat-content');
+        const ltMsgInput = document.getElementById('lt-msg-input');
+        const ltBtnSend = document.getElementById('lt-btn-send');
+        
+        const ltSelectRoleModal = document.getElementById('lt-select-role-modal');
+        const ltRoleList = document.getElementById('lt-role-list');
+
+        // 同步大封面的旋转状态
+        globalAudio.addEventListener('play', () => { if(ltMusicCover) ltMusicCover.classList.add('playing'); });
+        globalAudio.addEventListener('pause', () => { if(ltMusicCover) ltMusicCover.classList.remove('playing'); });
+
+        // 点击底部播放栏左侧，打开“一起听歌”页面
+        const dockLeft = document.querySelector('.music-dock-left');
+        if (dockLeft) {
+            dockLeft.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (!currentPlayingMusicId) return; 
+                
+                const music = await bunnyDB.music.get(parseInt(currentPlayingMusicId));
+                if (music) {
+                    ltMusicCover.src = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=600&q=80';
+                    ltMusicTitle.textContent = music.title || '未知歌名';
+                    ltMusicSinger.textContent = music.singer || '未知歌手';
+                    
+                    if (!globalAudio.paused) ltMusicCover.classList.add('playing');
+                    else ltMusicCover.classList.remove('playing');
+
+                    listenTogetherModal.classList.add('active');
+                }
+            });
+        }
+
+        // 关闭页面
+        document.getElementById('btn-close-lt-modal')?.addEventListener('click', () => {
+            listenTogetherModal.classList.remove('active');
+        });
+
+        // 点击左侧头像，打开选择角色弹窗
+        document.getElementById('lt-btn-select-role')?.addEventListener('click', async () => {
+            ltRoleList.innerHTML = '';
+            const chats = await bunnyDB.characters.toArray();
+            if (chats.length === 0) {
+                ltRoleList.innerHTML = '<div style="text-align:center; color:#cbaeb4; font-size: 12px; padding: 20px;">暂无角色，请先在Chat页面添加</div>';
+            } else {
+                chats.forEach(chat => {
+                    const avatarSrc = chat.avatar || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ccc\'%3E%3Cpath d=\'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z\'/%3E%3C/svg%3E';
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'cp-device-item'; 
+                    itemDiv.innerHTML = `<img class="cp-device-avatar" src="${avatarSrc}"><div class="cp-device-name">${chat.name}</div>`;
+                    
+                    itemDiv.addEventListener('click', () => {
+                        currentLtRole = chat;
+                        // 更新左侧角色头像和名字
+                        ltRoleAvatar.src = avatarSrc;
+                        ltRoleName.textContent = chat.name;
+                        // 更新右侧用户绑定的头像和名字
+                        ltUserAvatar.src = chat.userAvatar || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ccc\'%3E%3Cpath d=\'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z\'/%3E%3C/svg%3E';
+                        ltUserName.textContent = chat.userName || '我';
+                        
+                        ltChatContent.innerHTML = `<div style="text-align:center; color:var(--theme-pink-dark); font-size:12px; font-weight: 700; margin-bottom: 10px;">你邀请了 ${chat.name} 一起听歌 🎧</div>`;
+                        ltSelectRoleModal.classList.remove('active');
+                    });
+                    ltRoleList.appendChild(itemDiv);
+                });
+            }
+            ltSelectRoleModal.classList.add('active');
+        });
+
+        document.getElementById('btn-close-lt-role')?.addEventListener('click', () => {
+            ltSelectRoleModal.classList.remove('active');
+        });
+
+        function appendLtMsg(roleType, text, avatarUrl) {
+            const row = document.createElement('div');
+            row.className = `lt-msg-row ${roleType}`;
+            if (roleType === 'user') {
+                row.innerHTML = `<div class="lt-bubble">${text}</div><img src="${avatarUrl}" class="lt-avatar">`;
+            } else {
+                row.innerHTML = `<img src="${avatarUrl}" class="lt-avatar"><div class="lt-bubble">${text}</div>`;
+            }
+            ltChatContent.appendChild(row);
+            ltChatContent.scrollTop = ltChatContent.scrollHeight;
+        }
+
+        // 发送消息并调用 AI 接口
+        ltBtnSend?.addEventListener('click', async () => {
+            if (!currentLtRole) return alert('请先点击左侧头像邀请一个角色！');
+            const text = ltMsgInput.value.trim();
+            if (!text) return;
+            if (!currentPlayingMusicId) return alert('当前没有播放音乐！');
+
+            const music = await bunnyDB.music.get(parseInt(currentPlayingMusicId));
+            if (!music) return;
+
+            appendLtMsg('user', text, currentLtRole.userAvatar || ltUserAvatar.src);
+            ltMsgInput.value = '';
+            
+            ltBtnSend.disabled = true;
+            ltBtnSend.textContent = '...';
+            ltBtnSend.style.opacity = '0.5';
+
+            try {
+                const config = await localforage.getItem('api_settings');
+                if (!config || !config.url || !config.key || !config.model) throw new Error('请配置API');
+                
+                let apiUrl = config.url.replace(/\/+$/, '').replace(/\/chat\/completions$/, '').replace(/\/models$/, '');
+                if (!apiUrl.endsWith('/v1')) apiUrl += '/v1';
+
+                // 提取最近5条真实聊天历史作为性格参考
+                const rawHistory = await bunnyDB.chatHistory.where('roleId').equals(currentLtRole.id).reverse().limit(5).toArray();
+                rawHistory.reverse();
+                const historyStr = rawHistory.map(m => {
+                    let c = m.content;
+                    try { if(JSON.parse(c).type) c = "[特殊消息]"; } catch(e){}
+                    return `${m.role === 'user' ? currentLtRole.userName : currentLtRole.name}: ${c}`;
+                }).join('\n');
+
+                const prompt = `你正在进行极度真实的线上角色扮演。
+【角色设定】姓名：${currentLtRole.name}，性格：${currentLtRole.desc}
+【用户设定】姓名：${currentLtRole.userName}
+【当前场景】此刻，你和${currentLtRole.userName}正戴着同一副耳机（或通过连麦），正在一起听一首歌。
+🎵 正在播放的歌曲信息：
+- 歌名：《${music.title}》
+- 歌手：${music.singer}
+${music.lrc ? `- 歌词参考：\n${music.lrc.substring(0, 300)}...` : ''}
+
+【近期聊天参考】（仅用于保持性格连贯）：
+${historyStr || '暂无'}
+
+【用户刚才对你说的悄悄话】：
+${currentLtRole.userName}：${text}
+
+【任务要求】
+请深刻感知这首歌的氛围，结合你的人设，对用户的话做出自然、简短的回复。
+你可以聊聊这首歌的旋律、某句歌词，或者表达你此刻挨着TA听歌的感受。
+⚠️ 绝对禁止输出任何 markdown、思考过程或旁白括号（如 *微笑*）。
+⚠️ 必须只输出你说的话，像微信聊天一样简短真实。`;
+
+                const response = await fetch(`${apiUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${config.key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: config.model,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.7
+                    })
+                });
+                
+                if (!response.ok) throw new Error('API 请求失败');
+                const data = await response.json();
+                let replyText = data.choices[0].message.content.trim();
+                replyText = replyText.replace(/[\s\S]*?<\/think>/gi, '').trim();
+
+                appendLtMsg('ai', replyText, currentLtRole.avatar || ltRoleAvatar.src);
+
+                // 将听歌聊天静默存入主聊天记录中作为记忆
+                const now = Date.now();
+                await bunnyDB.chatHistory.put({
+                    roleId: currentLtRole.id,
+                    role: 'user',
+                    content: `[一起听歌《${music.title}》时说]：${text}`,
+                    timestamp: now
+                });
+                await bunnyDB.chatHistory.put({
+                    roleId: currentLtRole.id,
+                    role: 'assistant',
+                    content: replyText,
+                    timestamp: now + 1000
+                });
+
+            } catch (err) {
+                console.error(err);
+                appendLtMsg('ai', '网络似乎断开了，听不清你说什么...', currentLtRole.avatar || ltRoleAvatar.src);
+            } finally {
+                ltBtnSend.disabled = false;
+                ltBtnSend.textContent = '发送';
+                ltBtnSend.style.opacity = '1';
+            }
+        });
+
+        ltMsgInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') ltBtnSend.click();
+        });
+
 
         // --- 核心修复：点击播放栏左侧（头像、歌名）展开带有输入框的详情页面 ---
         const dockLeft = document.querySelector('.music-dock-left');
