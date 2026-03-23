@@ -907,65 +907,82 @@
             <button class="settings-btn" id="btn-del-music" style="color: #ff6b81; margin-top: 10px; display: none;">删除歌曲</button>
         </div>
     </div>
-    <!-- 绝美恢复：一起听歌沉浸式页面 -->
-    <div class="modal-overlay" id="listen-together-modal" style="z-index: 2600; background: rgba(255, 240, 245, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);">
-        <div class="modal-content" style="height: 90vh; max-height: 800px; padding: 0; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,240,245,0.95) 100%); border: 1px solid rgba(255,255,255,0.8);">
-            
-            <div class="modal-header" style="padding: 16px; flex-shrink: 0; border-bottom: 1px solid rgba(255,182,193,0.3); position: relative;">
-                <span>正在播放</span>
-                <div id="btn-close-lt-modal" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: rgba(255,182,193,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-pink-dark); cursor: pointer; font-size: 18px; font-weight: bold;">×</div>
-            </div>
-            
-            <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding: 20px 16px; position: relative;">
-                <!-- 大圆形封面 -->
-                <div class="lt-cover-container">
-                    <img src="" id="lt-music-cover" class="lt-music-cover">
-                </div>
-                <div id="lt-music-title" style="font-size: 18px; font-weight: 800; color: var(--theme-text-dark); margin-top: 16px; text-align: center;">未知歌名</div>
-                <div id="lt-music-singer" style="font-size: 12px; color: #cbaeb4; font-weight: 600; margin-top: 4px; text-align: center;">未知歌手</div>
+    <!-- 绝美重构：一起听歌全屏沉浸页面 -->
+    <div id="listen-together-page">
+        <div class="lt-header">
+            <span>正在播放</span>
+            <div class="lt-btn-collapse" id="btn-close-lt-page">收起</div>
+        </div>
 
-                <!-- 耳机线与双头像 -->
-                <div class="lt-headphone-section">
-                    <svg class="lt-wire" viewBox="0 0 100 50" preserveAspectRatio="none">
-                        <path d="M 10 40 C 30 -10, 70 -10, 90 40" fill="none" stroke="var(--theme-pink-dark)" stroke-width="1.5" stroke-dasharray="4,4"/>
-                    </svg>
-                    <div class="lt-avatars">
-                        <!-- 左侧：角色 -->
-                        <div class="lt-avatar-wrapper" id="lt-btn-select-role">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" id="lt-role-avatar">
-                            <div class="lt-avatar-hint" id="lt-role-name">选角色</div>
-                        </div>
-                        <!-- 右侧：用户 -->
-                        <div class="lt-avatar-wrapper">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" id="lt-user-avatar">
-                            <div class="lt-avatar-hint" id="lt-user-name">我</div>
-                        </div>
-                    </div>
+        <!-- 顶部：双头像与外侧渐变耳机线 -->
+        <div class="lt-top-area">
+            <svg class="lt-wires-svg" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="wire-fade" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="var(--theme-pink-dark)" stop-opacity="0.8"/>
+                        <stop offset="100%" stop-color="var(--theme-pink-dark)" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                <!-- 左侧耳机线：从左侧头像外侧垂落并渐变消失 -->
+                <path d="M calc(50% - 65px) 0 Q calc(50% - 80px) 60, calc(50% - 40px) 120" fill="none" stroke="url(#wire-fade)" stroke-width="2"/>
+                <!-- 右侧耳机线：从右侧头像外侧垂落并渐变消失 -->
+                <path d="M calc(50% + 65px) 0 Q calc(50% + 80px) 60, calc(50% + 40px) 120" fill="none" stroke="url(#wire-fade)" stroke-width="2"/>
+            </svg>
+            <div class="lt-avatars-box">
+                <div class="lt-avatar-col" id="lt-btn-select-role">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" id="lt-role-avatar">
+                    <div class="lt-avatar-name" id="lt-role-name">选角色</div>
                 </div>
-
-                <!-- 聊天记录展示区 -->
-                <div id="lt-chat-content" style="width: 100%; margin-top: 24px; display: flex; flex-direction: column; gap: 14px; padding-bottom: 20px;">
-                    <div style="text-align:center; color:#cbaeb4; font-size:12px; font-weight: 600;">点击左侧头像邀请TA，一起沉浸在音乐里吧~</div>
+                <div class="lt-avatar-col">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" id="lt-user-avatar">
+                    <div class="lt-avatar-name" id="lt-user-name">我</div>
                 </div>
             </div>
+            <div class="lt-invite-hint" id="lt-invite-hint">点击左侧头像邀请TA一起听歌 🎧</div>
+        </div>
 
-            <!-- 底部聊天输入框 -->
-            <div style="padding: 14px 16px; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,182,193,0.3); display: flex; gap: 10px; align-items: center; flex-shrink: 0; padding-bottom: max(14px, env(safe-area-inset-bottom));">
-                <input type="text" id="lt-msg-input" class="settings-input" placeholder="和TA聊聊这首歌..." style="flex: 1; padding: 12px 16px; border-radius: 24px; background: rgba(255,255,255,0.9);">
-                <button class="settings-btn primary" id="lt-btn-send" style="padding: 12px 20px; border-radius: 24px; border: none; box-shadow: 0 6px 16px rgba(255,158,170,0.4);">发送</button>
+        <!-- 中部：封面与歌名 -->
+        <div class="lt-middle-area">
+            <div class="lt-cover-wrap">
+                <img src="" id="lt-music-cover">
+            </div>
+            <div class="lt-song-title" id="lt-music-title">未知歌名</div>
+            <div class="lt-song-singer" id="lt-music-singer">未知歌手</div>
+        </div>
+
+        <!-- 中下部：固定高度可滑动的聊天区 (无头绪气泡) -->
+        <div class="lt-chat-scroll-area" id="lt-chat-content">
+            <!-- 聊天气泡将在这里生成 -->
+        </div>
+
+        <!-- 底部：输入框与音乐控制栏 -->
+        <div class="lt-bottom-area">
+            <div class="lt-input-row">
+                <input type="text" id="lt-msg-input" placeholder="和TA聊聊这首歌...">
+                <button id="lt-btn-send">发送</button>
+            </div>
+            <div class="lt-controls-row">
+                <div class="lt-progress-bar" id="lt-progress-bar">
+                    <div class="lt-progress-fill" id="lt-progress-fill"></div>
+                </div>
+                <div class="lt-btns">
+                    <div class="lt-btn-icon" id="lt-btn-prev"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></div>
+                    <div class="lt-btn-icon lt-btn-play" id="lt-btn-play"><svg viewBox="0 0 24 24" id="lt-icon-play"><path d="M8 5v14l11-7z"/></svg></div>
+                    <div class="lt-btn-icon" id="lt-btn-next"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 选择听歌角色的弹窗 -->
-    <div class="modal-overlay" id="lt-select-role-modal" style="z-index: 2700;">
+    <!-- 选择听歌角色的弹窗 (保持不变) -->
+    <div class="modal-overlay" id="lt-select-role-modal" style="z-index: 2900;">
         <div class="modal-content">
             <div class="modal-header">邀请谁一起听歌？</div>
-            <div class="cp-device-list" id="lt-role-list" style="max-height: 50vh; overflow-y: auto; margin-top: 12px;">
-            </div>
+            <div class="cp-device-list" id="lt-role-list" style="max-height: 50vh; overflow-y: auto; margin-top: 12px;"></div>
             <button class="settings-btn" id="btn-close-lt-role" style="margin-top: 14px; width: 100%; padding: 10px; font-size: 13px;">取消</button>
         </div>
     </div>
+
 <div class="context-menu" id="context-menu">
     <button class="menu-btn" id="menu-url-btn">输入URL</button>
     <button class="menu-btn" id="menu-local-btn">本地文件</button>
