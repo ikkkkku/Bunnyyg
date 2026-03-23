@@ -72,8 +72,24 @@
     </defs>
 </svg>
 <div class="screen">
+    <header class="status-bar">
+        <div class="status-left">
+            <span class="real-time">00:00</span>
+        </div>
+        <div class="status-right">
+            <svg class="icon-signal" viewBox="0 0 24 24">
+                <rect x="1.5" y="14" width="2.5" height="8" rx="1"/>
+                <rect x="6" y="11" width="2.5" height="11" rx="1"/>
+                <rect x="10.5" y="8" width="2.5" height="14" rx="1"/>
+                <rect x="15" y="5" width="2.5" height="17" rx="1"/>
+                <rect x="19.5" y="2" width="2.5" height="20" rx="1"/>
+            </svg>
+            <div class="battery-container">
+                <div class="battery-level" id="battery-fill" style="width: 80%;"></div>
+            </div>
+        </div>
+    </header>
     <!-- 新增：顶部横幅通知 -->
-
     <div class="notification-banner" id="notification-banner">
         <img class="notif-avatar" id="notif-avatar" src="">
         <div class="notif-info">
@@ -260,6 +276,16 @@
             </div>
             <div class="theme-section-content">
                 <div class="settings-group">
+                    <div class="switch-container">
+                        <div>
+                            <div class="switch-label">隐藏状态栏</div>
+                            <div class="switch-desc">开启后将隐藏顶部时间、信号、电池等信息</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-hide-statusbar">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                     <!-- 新增：UI缩放设置 -->
                     <div class="slider-container" style="padding: 14px 16px; background: var(--theme-card-bg); border: 1px solid var(--theme-border); border-radius: 16px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.01);">
                         <label>UI缩放: <span id="ui-scale-val" style="color: var(--theme-pink-dark);">100%</span></label>
@@ -822,32 +848,13 @@
         <div class="theme-content" style="padding-bottom: 100px;" id="music-list-content">
             <!-- 歌曲列表将渲染在这里 -->
         </div>
-        <!-- 悬浮歌词面板 -->
-        <div class="lrc-overlay" id="lrc-overlay">
-            <div class="lrc-container" id="lrc-container">
-                <div class="lrc-line">暂无歌词</div>
-            </div>
-        </div>
         <!-- 底部音乐播放栏 -->
         <div class="music-dock-bar">
             <div class="music-progress-container" id="music-progress-container">
-                <div class="music-progress-bg">
-                    <div class="music-progress-fill" id="music-progress-fill">
-                        <div class="music-progress-thumb"></div>
-                    </div>
-                </div>
+                <div class="music-progress-fill" id="music-progress-fill"></div>
             </div>
             <div class="music-dock-left">
-                <div class="music-cover-container" id="dock-cover-container">
-                    <div class="music-cover-flipper" id="dock-cover-flipper">
-                        <div class="music-cover-front">
-                            <img src="https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80" class="music-dock-cover" id="dock-music-cover" alt="cover">
-                        </div>
-                        <div class="music-cover-back">
-                            <svg viewBox="0 0 24 24"><use href="#ic-music-note"/></svg>
-                        </div>
-                    </div>
-                </div>
+                <img src="https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80" class="music-dock-cover" id="dock-music-cover" alt="cover">
                 <div class="music-dock-info">
                     <div class="music-dock-title" id="dock-music-title">未知歌曲</div>
                     <div class="music-dock-singer" id="dock-music-singer">未知歌手</div>
@@ -1291,4 +1298,4 @@
 </div>
 <script src="script.js"></script>
 </body>
-</html>
+    </html>
