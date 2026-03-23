@@ -915,16 +915,14 @@
         </div>
 
         <div class="lt-top-area">
-            <svg class="lt-wires-svg" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="wire-fade" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="var(--theme-pink-dark)" stop-opacity="0.8"/>
-                        <stop offset="100%" stop-color="var(--theme-pink-dark)" stop-opacity="0"/>
-                    </linearGradient>
-                </defs>
-                <path d="M calc(50% - 65px) 0 Q calc(50% - 80px) 60, calc(50% - 40px) 120" fill="none" stroke="url(#wire-fade)" stroke-width="2"/>
-                <path d="M calc(50% + 65px) 0 Q calc(50% + 80px) 60, calc(50% + 40px) 120" fill="none" stroke="url(#wire-fade)" stroke-width="2"/>
+            <!-- 绝对能显示的精美 SVG 耳机线，向下渐变消失 -->
+            <svg class="lt-wires-svg" viewBox="0 0 300 150">
+                <!-- 左侧头像连线 -->
+                <path d="M 60,0 C 40,50 80,100 100,150" fill="none" stroke="var(--theme-pink-dark)" stroke-width="2" opacity="0.6"/>
+                <!-- 右侧头像连线 -->
+                <path d="M 240,0 C 260,50 220,100 200,150" fill="none" stroke="var(--theme-pink-dark)" stroke-width="2" opacity="0.6"/>
             </svg>
+            
             <div class="lt-avatars-box">
                 <div class="lt-avatar-col" id="lt-btn-select-role">
                     <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" id="lt-role-avatar">
@@ -944,6 +942,7 @@
                 <div class="lt-cover-front">
                     <img src="" id="lt-music-cover">
                 </div>
+                <!-- 纯净的透明歌词背面，没有丑陋圆形 -->
                 <div class="lt-cover-back">
                     <div class="lt-lrc-container" id="lt-lrc-container">
                         <!-- 滚动歌词渲染区 -->
@@ -957,7 +956,7 @@
         <!-- 聊天区：无头像无头绪气泡 -->
         <div class="lt-chat-scroll-area" id="lt-chat-content"></div>
 
-        <!-- 底部：透明背景、输入框与加大控件 -->
+        <!-- 底部：全透明背景、输入框与超大控件 -->
         <div class="lt-bottom-area">
             <div class="lt-input-row">
                 <input type="text" id="lt-msg-input" placeholder="和TA聊聊这首歌...">
@@ -973,6 +972,16 @@
                     <div class="lt-btn-icon" id="lt-btn-next"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 3. 收起时的选择弹窗 -->
+    <div class="modal-overlay" id="lt-exit-modal" style="z-index: 3000;">
+        <div class="modal-content" style="text-align: center; border-radius: 24px; padding: 24px;">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 24px; color: var(--theme-text-dark);">要结束一起听歌吗？</div>
+            <button class="settings-btn" id="btn-lt-minimize" style="margin-bottom: 12px; width: 100%; border-radius: 20px;">最小化到后台</button>
+            <button class="settings-btn" id="btn-lt-exit" style="margin-bottom: 12px; width: 100%; background: #ff6b81; color: white; border: none; border-radius: 20px;">结束听歌</button>
+            <button class="settings-btn" id="btn-lt-cancel-exit" style="width: 100%; background: transparent; color: #999; border: none; box-shadow: none;">取消</button>
         </div>
     </div>
 
