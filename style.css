@@ -2115,13 +2115,12 @@ padding: 0;
         /* --- 绝美重构：一起听歌全屏页面专属高级样式 --- */
     #listen-together-page {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        /* 6. 上粉下白渐变背景 */
-        background: linear-gradient(180deg, #ffc0cb 0%, #ffffff 100%);
+        /* 修复：将顶部的粉色调得非常浅、非常通透，向下渐变到纯白 */
+        background: linear-gradient(180deg, #fff0f5 0%, #ffffff 100%);
         z-index: 2800; display: none; flex-direction: column; overflow: hidden;
     }
     #listen-together-page.active { display: flex; animation: slideUp 0.3s ease forwards; }
     
-    /* 2. 修复顶部严重遮挡状态栏，强制下移 */
     .lt-header {
         margin-top: max(40px, env(safe-area-inset-top)); 
         padding: 0 16px 16px 16px; 
@@ -2140,7 +2139,6 @@ padding: 0;
     .lt-avatar-col img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(255,182,193,0.4); z-index: 2; }
     .lt-avatar-name { font-size: 11px; font-weight: 700; color: var(--theme-pink-dark); background: rgba(255,255,255,0.8); padding: 2px 8px; border-radius: 10px; }
     
-    /* 4. 修复耳机线：精美弧线，向下渐变消失 */
     .lt-wires-svg { 
         position: absolute; top: 28px; left: 50%; transform: translateX(-50%); 
         width: 300px; height: 150px; z-index: 1; pointer-events: none; 
@@ -2149,7 +2147,6 @@ padding: 0;
     }
     .lt-invite-hint { font-size: 12px; font-weight: 600; color: var(--theme-pink-dark); margin-top: 12px; opacity: 0.8; }
 
-    /* 1 & 5. 超大封面与 3D 悬浮透明歌词 */
     .lt-middle-area { display: flex; flex-direction: column; align-items: center; margin-top: 24px; flex-shrink: 0; perspective: 1000px; }
     .lt-cover-3d-wrap { width: 260px; height: 260px; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; margin-bottom: 20px; }
     .lt-cover-3d-wrap.flipped { transform: rotateY(180deg); }
@@ -2162,10 +2159,9 @@ padding: 0;
     .lt-cover-front img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; animation: spin 20s linear infinite; animation-play-state: paused; }
     .lt-cover-front img.playing { animation-play-state: running; }
     
-    /* 5. 翻转后没有黑色丑陋圆形，只有文字悬浮 */
     .lt-cover-back { 
         position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
-        transform: rotateY(180deg); background: transparent; /* 完全透明，无圆角限制 */
+        transform: rotateY(180deg); background: transparent; 
         display: flex; flex-direction: column; align-items: center; justify-content: center; 
     }
     .lt-lrc-container { width: 120%; height: 100%; overflow-y: scroll; scroll-behavior: smooth; text-align: center; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); padding: 20px 0; }
@@ -2176,7 +2172,6 @@ padding: 0;
     .lt-song-title { font-size: 26px; font-weight: 800; color: var(--theme-text-dark); margin-top: 8px; text-align: center; padding: 0 20px; }
     .lt-song-singer { font-size: 16px; color: var(--theme-pink-dark); font-weight: 600; margin-top: 6px; text-align: center; opacity: 0.8; }
 
-    /* 2. 聊天区：无头像，纯净气泡 */
     .lt-chat-scroll-area {
         flex: 1; width: 100%; padding: 10px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
         max-height: 200px; margin-top: 10px;
@@ -2187,24 +2182,24 @@ padding: 0;
     .lt-bubble {
         padding: 12px 18px; font-size: 14px; line-height: 1.5; color: var(--theme-text-dark); font-weight: 600;
         max-width: 85%; word-break: break-all; box-shadow: 0 4px 16px rgba(255,182,193,0.2);
-        border-radius: 20px !important; /* 彻底圆角，无头绪 */
+        border-radius: 20px !important; 
     }
     .lt-msg.ai .lt-bubble { background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.6); }
     .lt-msg.user .lt-bubble { background: rgba(255,228,232,0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.6); }
 
-    /* 3 & 4. 底部完全透明、控件下移且额外加大 */
     .lt-bottom-area { width: 100%; background: transparent; padding-bottom: max(40px, env(safe-area-inset-bottom) + 20px); flex-shrink: 0; display: flex; flex-direction: column; margin-top: auto; border: none; }
-    .lt-input-row { display: flex; gap: 12px; padding: 10px 24px; align-items: center; margin-bottom: 10px; }
-    .lt-input-row input { flex: 1; padding: 14px 20px; border-radius: 24px; background: rgba(255,255,255,0.6); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.8); font-size: 14px; font-weight: 600; color: var(--theme-text-dark); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    
+    /* 修复：恢复小巧精致的输入框和发送按钮 */
+    .lt-input-row { display: flex; gap: 10px; padding: 10px 24px; align-items: center; margin-bottom: 4px; }
+    .lt-input-row input { flex: 1; padding: 10px 16px; border-radius: 20px; background: rgba(255,255,255,0.6); backdrop-filter: blur(5px); border: 1px solid rgba(255,182,193,0.4); font-size: 13px; font-weight: 600; color: var(--theme-text-dark); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
     .lt-input-row input::placeholder { color: #cbaeb4; font-weight: 500; }
-    .lt-input-row button { padding: 14px 24px; border-radius: 24px; border: none; background: var(--theme-pink); color: #fff; font-weight: bold; font-size: 14px; box-shadow: 0 4px 16px rgba(255,158,170,0.5); }
+    .lt-input-row button { padding: 10px 18px; border-radius: 20px; border: none; background: var(--theme-pink); color: #fff; font-weight: bold; font-size: 13px; box-shadow: 0 4px 12px rgba(255,158,170,0.5); }
     
     .lt-controls-row { display: flex; flex-direction: column; padding: 0 30px; margin-top: 10px; }
     .lt-progress-bar { width: 100%; height: 5px; background: rgba(255,182,193,0.5); border-radius: 3px; position: relative; cursor: pointer; margin-bottom: 30px; }
     .lt-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--theme-pink-dark); border-radius: 3px; width: 0%; pointer-events: none; }
     .lt-progress-fill::after { content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border: 3px solid var(--theme-pink-dark); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
     
-    /* 额外加大三个按键 */
     .lt-btns { display: flex; justify-content: center; align-items: center; gap: 45px; }
     .lt-btn-icon { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; color: var(--theme-pink-dark); cursor: pointer; transition: transform 0.1s; }
     .lt-btn-icon:active { transform: scale(0.9); }
@@ -2212,6 +2207,5 @@ padding: 0;
     .lt-btn-play { width: 72px; height: 72px; background: var(--theme-pink-dark); color: #fff; border-radius: 50%; box-shadow: 0 8px 24px rgba(255,182,193,0.7); }
     .lt-btn-play svg { width: 42px; height: 42px; }
 
-    /* 1. 修复底层音乐播放栏蒙版 Bug */
     .music-dock { overflow: visible !important; border-radius: 0 !important; }
 
