@@ -4856,72 +4856,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const dockCover = document.getElementById('dock-music-cover');
         const progressFill = document.getElementById('music-progress-fill');
         const progressContainer = document.getElementById('music-progress-container');
-        // --- 新增：歌词解析与渲染逻辑 ---
-        let parsedLrc = [];
-        let currentLrcIndex = -1;
-        function parseLrc(lrcStr) {
-            const lines = lrcStr.split('\n');
-            const result = [];
-            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-            for (let line of lines) {
-                const match = timeReg.exec(line);
-                if (match) {
-                    const min = parseInt(match[1]);
-                    const sec = parseInt(match[2]);
-                    const ms = match[3].length === 2 ? parseInt(match[3]) * 10 : parseInt(match[3]);
-                    const time = min * 60 + sec + ms / 1000;
-                    const text = line.replace(timeReg, '').trim();
-                    if (text) {
-                        result.push({ time, text });
-                    }
-                }
-            }
-            return result;
-        }
 
-        function renderLrc(lrcData) {
-            const container = document.getElementById('lrc-container');
-            if (!container) return;
-            container.innerHTML = '';
-            if (!lrcData || lrcData.length === 0) {
-                container.innerHTML = '<div class="lrc-line">暂无歌词</div>';
-                return;
-            }
-            lrcData.forEach((item, index) => {
-                const el = document.createElement('div');
-                el.className = 'lrc-line';
-                el.id = 'lrc-line-' + index;
-                el.textContent = item.text;
-                container.appendChild(el);
-            });
-        }
-        
-        const dockCoverContainer = document.getElementById('dock-cover-container');
-        const dockCoverFlipper = document.getElementById('dock-cover-flipper');
-        const lrcOverlay = document.getElementById('lrc-overlay');
-
-        if (dockCoverContainer) {
-            dockCoverContainer.addEventListener('click', () => {
-                const isFlipped = dockCoverFlipper.classList.contains('flipped');
-                if (isFlipped) {
-                    dockCoverFlipper.classList.remove('flipped');
-                    if(lrcOverlay) lrcOverlay.classList.remove('active');
-                } else {
-                    dockCoverFlipper.classList.add('flipped');
-                    if(lrcOverlay) lrcOverlay.classList.add('active');
-                    if (currentLrcIndex >= 0) {
-                        setTimeout(() => {
-                            const newLine = document.getElementById('lrc-line-' + currentLrcIndex);
-                            if (newLine) {
-                                const container = document.getElementById('lrc-container');
-                                const offset = newLine.offsetTop - container.clientHeight / 2 + newLine.clientHeight / 2;
-                                container.scrollTo({ top: offset, behavior: 'smooth' });
-                            }
-                        }, 300);
-                    }
-                }
-            });
-        }
         globalAudio.addEventListener('play', () => {
             if(playIcon) playIcon.innerHTML = '<use href="#ic-pause"/>';
             if(dockCover) dockCover.classList.add('playing');
@@ -5025,7 +4960,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 globalAudio.play();
                 
                 const coverSrc = music.cover || 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?auto=format&fit=crop&w=100&q=80';
-                const dockCover = document.getElementById('dock-music-cover');
                 if(dockCover) dockCover.src = coverSrc;
                 const titleEl = document.getElementById('dock-music-title');
                 const singerEl = document.getElementById('dock-music-singer');
@@ -5245,92 +5179,6 @@ ${currentLtRole.userName}：${text}
             if (e.key === 'Enter') ltBtnSend.click();
         });
 
-
-        // --- 核心修复：点击播放栏左侧（头像、歌名）展开带有输入框的详情页面 ---
-        const dockLeft = document.querySelector('.music-dock-left');
-        if (dockLeft) {
-            dockLeft.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                if (!currentPlayingMusicId) return; // 如果没有播放音乐则不展开
-                
-                // 获取当前正在播放的音乐数据
-                const music = await bunnyDB.music.get(parseInt(currentPlayingMusicId));
-                if (music) {
-                    const musicModalTitle = document.getElementById('music-modal-title');
-                    const musicEditId = document.getElementById('music-edit-id');
-                    const musicTitleInput = document.getElementById('music-title-input');
-                    const musicSingerInput = document.getElementById('music-singer-input');
-                    const musicCoverTrigger = document.getElementById('music-cover-trigger');
-                    const btnUploadAudio = document.getElementById('btn-upload-audio');
-                    const musicUrlInput = document.getElementById('music-url-input');
-                    const btnUploadLrc = document.getElementById('btn-upload-lrc');
-                    const btnDelMusic = document.getElementById('btn-del-music');
-                    const musicEditModal = document.getElementById('music-edit-modal');
-
-                    // 完美契合您的要求：上方显示“正在播放”
-                    if (musicModalTitle) musicModalTitle.textContent = '正在播放'; 
-                    if (musicEditId) musicEditId.value = music.id;
-                    if (musicTitleInput) musicTitleInput.value = music.title;
-                    if (musicSingerInput) musicSingerInput.value = music.singer;
-                    
-                    // 大圆形封面回显
-                    if (musicCoverTrigger) {
-                        if (music.cover) {
-                            musicCoverTrigger.style.backgroundImage = `url('${music.cover}')`;
-                            musicCoverTrigger.classList.add('has-img');
-                            currentMusicCoverBase64 = music.cover;
-                        } else {
-                            musicCoverTrigger.style.backgroundImage = '';
-                            musicCoverTrigger.classList.remove('has-img');
-                            currentMusicCoverBase64 = '';
-                        }
-                    }
-
-                    // 音源回显
-                    if (btnUploadAudio) {
-                        if (music.audio && music.audio.startsWith('data:')) {
-                            btnUploadAudio.textContent = '已上传音源';
-                            btnUploadAudio.classList.add('has-file');
-                            if(musicUrlInput) musicUrlInput.value = '';
-                        } else {
-                            btnUploadAudio.textContent = '上传本地音源';
-                            btnUploadAudio.classList.remove('has-file');
-                            if(musicUrlInput) musicUrlInput.value = music.audio || '';
-                        }
-                    }
-
-                    if (btnDelMusic) btnDelMusic.style.display = 'block';
-                    
-                    // 展开页面
-                    if (musicEditModal) musicEditModal.classList.add('active');
-                }
-            });
-        }
-        // --- 核心修复：恢复点击播放栏左侧（头像、歌名）展开页面的功能 ---
-        const dockLeft = document.querySelector('.music-dock-left');
-        if (dockLeft) {
-            dockLeft.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // 兼容性打开：优先打开全屏播放页，如果没有则打开音乐列表主页
-                const playerPage = document.getElementById('music-player-page');
-                if (playerPage) {
-                    playerPage.classList.add('active');
-                } else {
-                    document.getElementById('music-page').classList.add('active');
-                }
-            });
-        }
-        
-        // 顺手为您恢复：点击桌面上方的大音乐组件也能展开页面
-        const musicWidget = document.querySelector('.music-widget');
-        if (musicWidget) {
-            musicWidget.addEventListener('click', (e) => {
-                // 防止您在点击修改文字/图片时误触展开
-                if (!e.target.hasAttribute('data-text-key') && !e.target.hasAttribute('data-img-key')) {
-                    document.getElementById('music-page').classList.add('active');
-                }
-            });
-        }
         // --- 弹窗与文件上传逻辑 ---
         if(musicCoverTrigger) {
             musicCoverTrigger.addEventListener('click', () => musicCoverInput?.click());
@@ -5584,4 +5432,3 @@ ${currentLtRole.userName}：${text}
         console.error("音乐模块加载出错：", e);
     }
 });
-
