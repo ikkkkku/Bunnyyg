@@ -4837,12 +4837,11 @@ window.addEventListener('DOMContentLoaded', () => {
         let currentPlayingMusicId = null;
         // 如果HTML中没有这些元素，就创建虚拟对象进行兜底，保证后面的 addEventListener 不会报错卡死
         const globalAudio = document.getElementById('global-audio') || new Audio(); 
-        const playIcon = document.getElementById('play-icon');
-        const dockCover = document.getElementById('dock-cover');
-        const progressContainer = document.getElementById('progress-container');
-        const progressFill = document.getElementById('progress-fill');
+        const playIcon = document.getElementById('icon-dock-play');
+        const dockCover = document.getElementById('dock-music-cover');
+        const progressContainer = document.getElementById('music-progress-container');
+        const progressFill = document.getElementById('music-progress-fill');
         // ----------------------------------------------------------------------
-
         // 1. 绑定桌面图标点击
 
         document.querySelectorAll('.app-item').forEach(item => {
@@ -5334,4 +5333,3 @@ document.getElementById('btn-dock-prev')?.addEventListener('click', () => {
         console.error("音乐模块加载出错：", e);
     }
 });
-
